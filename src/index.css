@@ -1,0 +1,1069 @@
+:root {
+  font-family: Avenir, "Avenir Next", "Segoe UI", sans-serif;
+  line-height: 1.4;
+  font-weight: 400;
+  color: #111;
+  background-color: #f1f1f1;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #f1f1f1;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes brainRegionPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.98;
+  }
+  50% {
+    transform: scale(var(--brain-pulse-scale, 1.04));
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.98;
+  }
+}
+
+@keyframes meterPulseGlow {
+  0% {
+    filter: brightness(1) saturate(1);
+  }
+  50% {
+    filter: brightness(1.08) saturate(1.12);
+  }
+  100% {
+    filter: brightness(1) saturate(1);
+  }
+}
+
+@keyframes meterShake {
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-2px);
+  }
+  40% {
+    transform: translateX(2px);
+  }
+  60% {
+    transform: translateX(-2px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes playfulGradientShift {
+  0% {
+    background-position: 0% 35%;
+  }
+  50% {
+    background-position: 100% 65%;
+  }
+  100% {
+    background-position: 0% 35%;
+  }
+}
+
+@keyframes floatingOrb {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-22px) scale(1.06);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes blobDriftOne {
+  0% {
+    transform: translate(-30%, -22%) scale(0.88) rotate(0deg);
+  }
+  50% {
+    transform: translate(44%, 34%) scale(1.42) rotate(18deg);
+  }
+  100% {
+    transform: translate(-30%, -22%) scale(0.88) rotate(0deg);
+  }
+}
+
+@keyframes blobDriftTwo {
+  0% {
+    transform: translate(22%, 24%) scale(0.88) rotate(0deg);
+  }
+  50% {
+    transform: translate(-40%, -34%) scale(1.42) rotate(-20deg);
+  }
+  100% {
+    transform: translate(22%, 24%) scale(0.88) rotate(0deg);
+  }
+}
+
+@keyframes blobDriftThree {
+  0% {
+    transform: translate(0, 0) scale(0.92) rotate(0deg);
+  }
+  50% {
+    transform: translate(42%, -40%) scale(1.48) rotate(22deg);
+  }
+  100% {
+    transform: translate(0, 0) scale(0.92) rotate(0deg);
+  }
+}
+
+@keyframes timerFinalBeat {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  45% {
+    transform: scale(1.08);
+    filter: brightness(1.15);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+@keyframes timerNumberPop {
+  0% {
+    transform: scale(0.78);
+    opacity: 0.45;
+  }
+  55% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes cardIdleFloat {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes scenarioStatusBadgeFloat {
+  0% {
+    transform: translateY(0) scale(1);
+    filter: saturate(1);
+  }
+  50% {
+    transform: translateY(-3px) scale(1.01);
+    filter: saturate(1.04);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    filter: saturate(1);
+  }
+}
+
+@keyframes analyzingBrainPulse {
+  0% {
+    transform: scale(1);
+    filter: saturate(1);
+  }
+  50% {
+    transform: scale(1.05);
+    filter: saturate(1.04);
+  }
+  100% {
+    transform: scale(1);
+    filter: saturate(1);
+  }
+}
+
+@keyframes analyzingBrainSweep {
+  0% {
+    transform: translateX(-34%) rotate(-10deg);
+    opacity: 0.18;
+  }
+  50% {
+    transform: translateX(8%) rotate(-2deg);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateX(42%) rotate(8deg);
+    opacity: 0.18;
+  }
+}
+
+@keyframes introButtonPulseGlow {
+  0% {
+    box-shadow:
+      0 0 12px rgba(99, 102, 241, 0.28),
+      0 10px 24px rgba(34, 211, 238, 0.12);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow:
+      0 0 28px rgba(34, 211, 238, 0.4),
+      0 14px 34px rgba(99, 102, 241, 0.22);
+    filter: brightness(1.05);
+  }
+  100% {
+    box-shadow:
+      0 0 12px rgba(99, 102, 241, 0.28),
+      0 10px 24px rgba(34, 211, 238, 0.12);
+    filter: brightness(1);
+  }
+}
+
+.intro-start-button {
+  background: linear-gradient(135deg, #6366f1 0%, #3b82f6 42%, #22d3ee 100%);
+  box-shadow:
+    0 0 20px rgba(99, 102, 241, 0.34),
+    0 12px 26px rgba(34, 211, 238, 0.16);
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    filter 220ms ease;
+  animation: introButtonPulseGlow 2s ease-in-out infinite;
+}
+
+.intro-start-button:hover {
+  transform: scale(1.08) translateY(-2px);
+  box-shadow:
+    0 0 32px rgba(34, 211, 238, 0.54),
+    0 16px 34px rgba(99, 102, 241, 0.24);
+  filter: brightness(1.08);
+}
+
+.intro-start-button:focus-visible {
+  outline: none;
+  transform: scale(1.05);
+  box-shadow:
+    0 0 0 4px rgba(191, 219, 254, 0.7),
+    0 0 30px rgba(34, 211, 238, 0.48);
+}
+
+.intro-start-button:active {
+  transform: scale(1.14);
+  box-shadow:
+    0 0 36px rgba(34, 211, 238, 0.62),
+    0 18px 38px rgba(99, 102, 241, 0.28);
+  filter: brightness(1.1);
+}
+
+.summary-play-button {
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    filter 220ms ease;
+  animation: introButtonPulseGlow 2.3s ease-in-out infinite;
+}
+
+.summary-play-button:hover {
+  transform: scale(1.06) translateY(-2px);
+  box-shadow:
+    0 0 30px rgba(34, 211, 238, 0.5),
+    0 16px 32px rgba(99, 102, 241, 0.22);
+  filter: brightness(1.08);
+}
+
+.summary-play-button:focus-visible {
+  outline: none;
+  transform: scale(1.04);
+  box-shadow:
+    0 0 0 4px rgba(191, 219, 254, 0.68),
+    0 0 28px rgba(34, 211, 238, 0.44);
+}
+
+.summary-play-button:active {
+  transform: scale(1.1);
+}
+
+.analyzing-brain-graphic .brain-svg-root {
+  filter:
+    drop-shadow(0 10px 18px rgba(15, 23, 42, 0.16))
+    drop-shadow(0 0 12px rgba(125, 211, 252, 0.12));
+}
+
+.analyzing-brain-graphic .brain-svg-root path {
+  opacity: 1;
+}
+
+.analyzing-brain-graphic.is-finalizing .brain-svg-root {
+  filter:
+    drop-shadow(0 12px 24px rgba(15, 23, 42, 0.14))
+    drop-shadow(0 0 24px rgba(103, 232, 249, 0.24))
+    drop-shadow(0 0 36px rgba(167, 243, 208, 0.18));
+}
+
+.scenario-action-button {
+  transform: scale(1);
+  filter: brightness(1);
+}
+
+.scenario-action-button:not(:disabled):hover {
+  transform: scale(1.04);
+  filter: brightness(1.05);
+}
+
+.scenario-action-button:not(:disabled):focus-visible {
+  outline: none;
+  transform: scale(1.03);
+  filter: brightness(1.04);
+}
+
+.scenario-action-button--next:not(:disabled):hover,
+.scenario-action-button--next:not(:disabled):focus-visible {
+  box-shadow:
+    0 16px 32px rgba(56, 189, 248, 0.24),
+    0 0 0 3px rgba(186, 230, 253, 0.82),
+    0 0 24px rgba(125, 211, 252, 0.28);
+}
+
+.scenario-action-button--hint:not(:disabled):hover,
+.scenario-action-button--hint:not(:disabled):focus-visible {
+  box-shadow:
+    0 16px 32px rgba(245, 158, 11, 0.22),
+    0 0 0 3px rgba(254, 243, 199, 0.88),
+    0 0 24px rgba(250, 204, 21, 0.22);
+}
+
+@keyframes resultConfettiBurst {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(0.35);
+    opacity: 0;
+  }
+  9% {
+    opacity: 1;
+  }
+  24% {
+    transform: translate(var(--confetti-burst-x, 0px), var(--confetti-burst-y, -80px))
+      rotate(300deg) scale(1.02);
+    opacity: 1;
+  }
+  52% {
+    transform: translate(
+        calc(var(--confetti-burst-x, 0px) * 0.9),
+        calc(var(--confetti-burst-y, -80px) * 0.82)
+      )
+      rotate(420deg) scale(0.98);
+    opacity: 1;
+  }
+  86% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(
+        calc(var(--confetti-burst-x, 0px) + var(--confetti-fall-drift, 30px)),
+        108vh
+      )
+      rotate(980deg) scale(0.95);
+    opacity: 0;
+  }
+}
+
+@keyframes resultSuccessBrainBurst {
+  0% {
+    transform: scale(1);
+    filter: saturate(1) brightness(1);
+  }
+  38% {
+    transform: scale(1.12);
+    filter: saturate(1.08) brightness(1.06);
+  }
+  68% {
+    transform: scale(1.04);
+    filter: saturate(1.04) brightness(1.03);
+  }
+  100% {
+    transform: scale(1);
+    filter: saturate(1) brightness(1);
+  }
+}
+
+@keyframes resultSuccessGlowBurst {
+  0% {
+    transform: translateX(-50%) scale(0.82);
+    opacity: 0;
+  }
+  30% {
+    transform: translateX(-50%) scale(1.08);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateX(-50%) scale(1.22);
+    opacity: 0.5;
+  }
+}
+
+@keyframes resultSuccessTextFade {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes resultSuccessTextFloat {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes lidFlipBrainImpact {
+  0% {
+    transform: translateX(0) scale(1);
+    filter: saturate(1) brightness(1);
+  }
+  8% {
+    transform: translateX(-2px) scale(1);
+    filter: saturate(1.02) brightness(1.01);
+  }
+  16% {
+    transform: translateX(2px) scale(1);
+    filter: saturate(1.04) brightness(1.02);
+  }
+  24% {
+    transform: translateX(-1px) scale(1.01);
+    filter: saturate(1.06) brightness(1.03);
+  }
+  36% {
+    transform: translateX(0) scale(1.12);
+    filter: saturate(1.18) brightness(1.1);
+  }
+  42% {
+    transform: translateX(8px) scale(1.1);
+    filter: saturate(1.2) brightness(1.12);
+  }
+  48% {
+    transform: translateX(-9px) scale(1.08);
+    filter: saturate(1.2) brightness(1.12);
+  }
+  56% {
+    transform: translateX(6px) scale(1.05);
+    filter: saturate(1.08) brightness(1.06);
+  }
+  66% {
+    transform: translateX(-3px) scale(1.03);
+    filter: saturate(1.03) brightness(1.02);
+  }
+  78% {
+    transform: translateX(1px) scale(1.01);
+    filter: saturate(1.02) brightness(1.01);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+    filter: saturate(1) brightness(1);
+  }
+}
+
+@keyframes lidFlipDangerFlash {
+  0% {
+    transform: translateX(-50%) scale(0.9);
+    opacity: 0;
+  }
+  24% {
+    transform: translateX(-50%) scale(0.96);
+    opacity: 0.12;
+  }
+  44% {
+    transform: translateX(-50%) scale(1.08);
+    opacity: 0.78;
+  }
+  100% {
+    transform: translateX(-50%) scale(1.16);
+    opacity: 0.24;
+  }
+}
+
+@keyframes lidFlipTextPop {
+  0% {
+    transform: scale(0.92) translateY(18px);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(1.1) translateY(-4px);
+    opacity: 1;
+  }
+  76% {
+    transform: scale(0.98) translateY(1px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes lidFlipTextShake {
+  0% {
+    transform: translateX(0);
+  }
+  18% {
+    transform: translateX(-2px);
+  }
+  36% {
+    transform: translateX(2px);
+  }
+  54% {
+    transform: translateX(-2px);
+  }
+  72% {
+    transform: translateX(1px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes meterDangerFlicker {
+  0% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  18% {
+    opacity: 0.94;
+    filter: brightness(1.08);
+  }
+  36% {
+    opacity: 1;
+    filter: brightness(0.96);
+  }
+  58% {
+    opacity: 0.92;
+    filter: brightness(1.12);
+  }
+  76% {
+    opacity: 1;
+    filter: brightness(0.95);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+@keyframes meterDangerJitter {
+  0% {
+    transform: translateX(0);
+  }
+  18% {
+    transform: translateX(-1px);
+  }
+  34% {
+    transform: translateX(2px);
+  }
+  50% {
+    transform: translateX(-2px);
+  }
+  66% {
+    transform: translateX(1px);
+  }
+  82% {
+    transform: translateX(-1px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes meterDangerUnstableGlow {
+  0% {
+    box-shadow:
+      0 0 10px rgba(248, 113, 113, 0.72),
+      0 0 18px rgba(239, 68, 68, 0.38),
+      inset 0 0 8px rgba(255, 255, 255, 0.18);
+  }
+  35% {
+    box-shadow:
+      0 0 14px rgba(248, 113, 113, 0.9),
+      0 0 26px rgba(239, 68, 68, 0.52),
+      inset 0 0 10px rgba(255, 255, 255, 0.24);
+  }
+  56% {
+    box-shadow:
+      0 0 9px rgba(248, 113, 113, 0.7),
+      0 0 16px rgba(239, 68, 68, 0.34),
+      inset 0 0 7px rgba(255, 255, 255, 0.16);
+  }
+  82% {
+    box-shadow:
+      0 0 13px rgba(248, 113, 113, 0.86),
+      0 0 22px rgba(239, 68, 68, 0.46),
+      inset 0 0 9px rgba(255, 255, 255, 0.22);
+  }
+  100% {
+    box-shadow:
+      0 0 10px rgba(248, 113, 113, 0.76),
+      0 0 18px rgba(239, 68, 68, 0.4),
+      inset 0 0 8px rgba(255, 255, 255, 0.18);
+  }
+}
+
+@keyframes meterDangerSpike {
+  0% {
+    width: 24%;
+    filter: brightness(1) saturate(1);
+  }
+  12% {
+    width: 30%;
+    filter: brightness(1.1) saturate(1.06);
+  }
+  28% {
+    width: 92%;
+    filter: brightness(1.24) saturate(1.2);
+  }
+  46% {
+    width: 84%;
+    filter: brightness(1.14) saturate(1.12);
+  }
+  62% {
+    width: 18%;
+    filter: brightness(1.08) saturate(1.08);
+  }
+  100% {
+    width: 24%;
+    filter: brightness(1.02) saturate(1.04);
+  }
+}
+
+@keyframes meterDangerShellPulse {
+  0% {
+    box-shadow:
+      inset 0 1px 0 var(--meter-sheen),
+      inset 0 -1px 1px rgba(16, 20, 32, 0.18),
+      0 2px 10px rgba(16, 20, 32, 0.12);
+  }
+  38% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.46),
+      inset 0 -1px 1px rgba(127, 29, 29, 0.2),
+      0 0 0 3px rgba(252, 165, 165, 0.4),
+      0 0 24px rgba(248, 113, 113, 0.34);
+  }
+  100% {
+    box-shadow:
+      inset 0 1px 0 var(--meter-sheen),
+      inset 0 -1px 1px rgba(16, 20, 32, 0.18),
+      0 2px 10px rgba(16, 20, 32, 0.12);
+  }
+}
+
+@keyframes meterBalancedFillUp {
+  0% {
+    transform: scaleX(0.18);
+    filter: brightness(0.96) saturate(0.92);
+  }
+  45% {
+    transform: scaleX(0.72);
+    filter: brightness(1.04) saturate(1.02);
+  }
+  100% {
+    transform: scaleX(1);
+    filter: brightness(1.08) saturate(1.08);
+  }
+}
+
+@keyframes meterBalancedShellRise {
+  0% {
+    box-shadow:
+      inset 0 1px 0 var(--meter-sheen),
+      inset 0 -1px 1px rgba(16, 20, 32, 0.18),
+      0 2px 10px rgba(16, 20, 32, 0.12);
+  }
+  100% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.46),
+      inset 0 -1px 1px rgba(8, 75, 61, 0.14),
+      0 0 0 3px rgba(167, 243, 208, 0.34),
+      0 0 22px rgba(45, 212, 191, 0.18);
+  }
+}
+
+@keyframes meterBalancedPulse {
+  0% {
+    box-shadow:
+      0 0 10px rgba(41, 227, 207, 0.62),
+      0 0 18px rgba(41, 227, 207, 0.34),
+      inset 0 0 8px rgba(255, 255, 255, 0.22);
+    filter: brightness(1.02) saturate(1.04);
+  }
+  50% {
+    box-shadow:
+      0 0 14px rgba(41, 227, 207, 0.78),
+      0 0 26px rgba(41, 227, 207, 0.46),
+      inset 0 0 10px rgba(255, 255, 255, 0.28);
+    filter: brightness(1.08) saturate(1.08);
+  }
+  100% {
+    box-shadow:
+      0 0 10px rgba(41, 227, 207, 0.62),
+      0 0 18px rgba(41, 227, 207, 0.34),
+      inset 0 0 8px rgba(255, 255, 255, 0.22);
+    filter: brightness(1.02) saturate(1.04);
+  }
+}
+
+@keyframes meterBalancedShimmer {
+  0% {
+    background-position: 0% 0%, -140% 0%;
+  }
+  100% {
+    background-position: 0% 0%, 180% 0%;
+  }
+}
+
+@keyframes meterBalancedFlow {
+  0% {
+    background-position: 0% 0%, -60% 0%;
+  }
+  100% {
+    background-position: 0% 0%, 140% 0%;
+  }
+}
+
+.brain-balance-meter {
+  --meter-border: rgba(15, 20, 32, 0.58);
+  --meter-sheen: rgba(255, 255, 255, 0.42);
+  width: 100%;
+  height: 30px;
+  padding: 2px;
+  border-radius: 999px;
+  border: 1px solid var(--meter-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.04)),
+    linear-gradient(135deg, rgba(238, 242, 248, 0.74), rgba(221, 228, 239, 0.52));
+  box-shadow:
+    inset 0 1px 0 var(--meter-sheen),
+    inset 0 -1px 1px rgba(16, 20, 32, 0.18),
+    0 2px 10px rgba(16, 20, 32, 0.12);
+  overflow: hidden;
+}
+
+.brain-balance-meter.is-shaking {
+  animation: meterShake 360ms ease-in-out 1;
+}
+
+.brain-balance-meter__track {
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(15, 20, 32, 0.06), rgba(15, 20, 32, 0.12));
+  padding: 2px;
+}
+
+.brain-balance-meter__fill {
+  height: 100%;
+  border-radius: 999px;
+  transition:
+    width 480ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 300ms ease,
+    background 280ms ease;
+}
+
+.brain-balance-meter__fill--balanced {
+  background: linear-gradient(90deg, #17c9b0 0%, #29e3cf 55%, #58f0e1 100%);
+  box-shadow:
+    0 0 10px rgba(41, 227, 207, 0.72),
+    0 0 18px rgba(41, 227, 207, 0.45),
+    inset 0 0 8px rgba(255, 255, 255, 0.25);
+  animation: meterPulseGlow 1.45s ease-in-out infinite;
+}
+
+.result-screen--balanced .result-meter-shell .brain-balance-meter {
+  animation: meterBalancedShellRise 900ms ease-out 1 both;
+}
+
+.result-screen--balanced .result-meter-shell .brain-balance-meter__fill--balanced {
+  transform-origin: left center;
+  background:
+    linear-gradient(90deg, #17c9b0 0%, #29e3cf 55%, #58f0e1 100%),
+    linear-gradient(105deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.34) 46%, rgba(255, 255, 255, 0) 62%);
+  background-size: 100% 100%, 42% 100%;
+  background-repeat: no-repeat;
+  animation:
+    meterBalancedFillUp 900ms cubic-bezier(0.2, 0.8, 0.2, 1) 1 both,
+    meterBalancedShimmer 900ms ease-out 520ms 1 both,
+    meterBalancedPulse 2.8s ease-in-out 900ms infinite,
+    meterBalancedFlow 3.8s linear 1400ms infinite;
+}
+
+.brain-balance-meter__fill--partial {
+  background: linear-gradient(90deg, #f8be35 0%, #ffd864 55%, #ffe38d 100%);
+  box-shadow:
+    0 0 7px rgba(248, 190, 53, 0.62),
+    0 0 12px rgba(248, 190, 53, 0.36),
+    inset 0 0 7px rgba(255, 255, 255, 0.2);
+}
+
+.brain-balance-meter__fill--dysregulated {
+  background: linear-gradient(90deg, #f2524f 0%, #ff6d67 60%, #ff8b86 100%);
+  box-shadow:
+    0 0 8px rgba(242, 82, 79, 0.7),
+    0 0 14px rgba(242, 82, 79, 0.42),
+    inset 0 0 7px rgba(255, 255, 255, 0.17);
+}
+
+.global-game-background {
+  position: relative;
+  min-height: 100vh;
+  background-size: 340% 340%;
+  animation: playfulGradientShift 2.8s linear infinite;
+  background: linear-gradient(135deg, #e8f3ff 0%, #eefaf3 50%, #fdf4ff 100%);
+  overflow: hidden;
+}
+
+.global-game-background__content {
+  position: relative;
+  z-index: 1;
+}
+
+.global-game-background__blob {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.global-game-background__blob--one {
+  top: -120px;
+  left: -80px;
+  width: 360px;
+  height: 360px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0) 68%);
+}
+
+.global-game-background__blob--two {
+  right: -110px;
+  bottom: -180px;
+  width: 440px;
+  height: 440px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, rgba(16, 185, 129, 0) 70%);
+}
+
+.global-game-background__blob--three {
+  top: 24%;
+  right: 16%;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(244, 114, 182, 0.14) 0%, rgba(244, 114, 182, 0) 74%);
+}
+
+.global-game-background__blob--four {
+  left: 8%;
+  bottom: -90px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.18) 0%, rgba(251, 191, 36, 0) 75%);
+}
+
+.role-selection-blob {
+  filter: blur(0px);
+  opacity: 1;
+  will-change: transform;
+}
+
+.role-selection-blob--one {
+  animation: blobDriftOne 3.6s ease-in-out infinite;
+}
+
+.role-selection-blob--two {
+  animation: blobDriftTwo 3.9s ease-in-out infinite;
+}
+
+.role-selection-blob--three {
+  animation: blobDriftThree 3.3s ease-in-out infinite;
+}
+
+.role-selection-blob--four {
+  animation: blobDriftTwo 3.1s ease-in-out infinite reverse;
+}
+
+.role-selection-timer-ring-pulse {
+  animation: timerFinalBeat 360ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.role-selection-timer-number-pulse {
+  display: inline-block;
+  animation: timerNumberPop 300ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.role-selection-card-shell {
+  animation: cardIdleFloat 3s ease-in-out infinite;
+}
+
+.result-confetti-piece {
+  position: absolute;
+  top: 0;
+  width: var(--confetti-w, 10px);
+  height: var(--confetti-h, 16px);
+  border-radius: 999px;
+  background: var(--confetti-color, #22d3ee);
+  box-shadow: 0 0 10px color-mix(in oklab, var(--confetti-color, #22d3ee) 70%, white 30%);
+  transform: translate3d(0, 0, 0);
+  animation: resultConfettiBurst var(--confetti-duration, 980ms) ease-out forwards;
+  animation-delay: var(--confetti-delay, 0ms);
+}
+
+.brain-svg-host {
+  display: block;
+  line-height: 0;
+}
+
+.brain-svg-host .brain-svg-root {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.brain-svg-host .brain-region {
+  transition: filter 200ms ease, transform 200ms ease, opacity 200ms ease;
+  transform-origin: center;
+}
+
+.brain-svg-host.has-active-region .brain-svg-root path {
+  opacity: 0.52;
+}
+
+.brain-svg-host .brain-region.is-active-region {
+  opacity: 1;
+  --brain-pulse-scale: 1.04;
+  animation: brainRegionPulse 0.95s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.brain-svg-host .brain-region-prefrontal.is-active-region {
+  --brain-pulse-scale: 1.02;
+  filter: brightness(1.18) saturate(1.28)
+    drop-shadow(0 0 6px rgba(120, 183, 255, 0.95))
+    drop-shadow(0 0 12px rgba(120, 183, 255, 0.72))
+    drop-shadow(0 0 18px rgba(120, 183, 255, 0.52));
+  stroke: rgba(120, 183, 255, 0.95);
+  stroke-width: 0.9;
+  paint-order: stroke fill;
+  stroke-linejoin: round;
+}
+
+.brain-svg-host .brain-region-amygdala.is-active-region {
+  filter: brightness(1.18) saturate(1.28)
+    drop-shadow(0 0 7px rgba(255, 124, 152, 0.98))
+    drop-shadow(0 0 14px rgba(255, 124, 152, 0.78))
+    drop-shadow(0 0 22px rgba(255, 124, 152, 0.62));
+  stroke: rgba(255, 124, 152, 0.95);
+  stroke-width: 1.6;
+  paint-order: stroke fill;
+  stroke-linejoin: round;
+}
+
+.brain-svg-host .brain-region-hippocampus.is-active-region {
+  filter: brightness(1.16) saturate(1.24)
+    drop-shadow(0 0 7px rgba(255, 220, 96, 0.98))
+    drop-shadow(0 0 14px rgba(255, 220, 96, 0.78))
+    drop-shadow(0 0 22px rgba(255, 220, 96, 0.62));
+  stroke: rgba(255, 220, 96, 0.95);
+  stroke-width: 1.6;
+  paint-order: stroke fill;
+  stroke-linejoin: round;
+}
+
+.result-screen--dysregulated .result-brain {
+  transform-origin: center;
+  animation: lidFlipBrainImpact 1.35s cubic-bezier(0.22, 0.9, 0.28, 1) 1 both;
+}
+
+.result-screen--dysregulated .result-danger-flash {
+  animation: lidFlipDangerFlash 900ms cubic-bezier(0.22, 0.9, 0.28, 1) 1 both;
+}
+
+.result-screen--dysregulated .result-brain .brain-svg-root {
+  filter:
+    drop-shadow(0 0 12px rgba(248, 113, 113, 0.28))
+    drop-shadow(0 0 22px rgba(251, 146, 60, 0.18));
+}
+
+.result-screen--dysregulated .result-meter-shell .brain-balance-meter {
+  animation:
+    meterDangerFlicker 200ms ease-out 1,
+    meterDangerShellPulse 1.15s ease-out 1,
+    meterDangerJitter 360ms ease-out 180ms 1;
+}
+
+.result-screen--dysregulated .result-meter-shell .brain-balance-meter__fill--dysregulated {
+  background: linear-gradient(90deg, #ef4444 0%, #f97316 58%, #fca5a5 100%);
+  box-shadow:
+    0 0 12px rgba(248, 113, 113, 0.8),
+    0 0 22px rgba(239, 68, 68, 0.42),
+    inset 0 0 8px rgba(255, 255, 255, 0.22);
+  animation:
+    meterDangerSpike 950ms cubic-bezier(0.22, 0.9, 0.28, 1) 1 both,
+    meterDangerUnstableGlow 620ms steps(4, end) 210ms 1 both;
+}
+
+.result-screen--dysregulated .result-text--dysregulated {
+  animation:
+    lidFlipTextPop 540ms cubic-bezier(0.2, 0.88, 0.26, 1) 160ms 1 both,
+    lidFlipTextShake 420ms ease-in-out 740ms infinite;
+}
+
+.result-screen--balanced .result-success-glow {
+  animation: resultSuccessGlowBurst 720ms cubic-bezier(0.22, 0.9, 0.28, 1) 1 both;
+}
+
+.result-screen--balanced .result-brain {
+  transform-origin: center;
+  animation: resultSuccessBrainBurst 720ms cubic-bezier(0.22, 0.9, 0.28, 1) 1 both;
+}
+
+.result-screen--balanced .result-brain .brain-svg-root {
+  filter:
+    drop-shadow(0 0 18px rgba(45, 212, 191, 0.26))
+    drop-shadow(0 0 34px rgba(103, 232, 249, 0.22));
+}
+
+.result-screen--balanced .result-text--balanced {
+  opacity: 0;
+  animation:
+    resultSuccessTextFade 420ms ease-out 820ms 1 forwards,
+    resultSuccessTextFloat 3.2s ease-in-out 1240ms infinite;
+}
