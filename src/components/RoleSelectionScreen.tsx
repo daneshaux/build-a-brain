@@ -210,7 +210,7 @@ function RoleSelectionScreen({
         </div>
 
         {allRolesSelected && (
-          <button style={styles.button} onClick={onContinue}>
+          <button className="app-primary-button" style={styles.button} onClick={onContinue}>
             Start
           </button>
         )}
@@ -324,14 +324,8 @@ const styles = {
   button: {
     alignSelf: "center",
     padding: "0.8rem 1.5rem",
-    borderRadius: "999px",
-    border: "1px solid rgba(45, 212, 191, 0.4)",
-    background: "linear-gradient(135deg, #0f766e, #0e7490)",
-    color: "#f0fdfa",
-    cursor: "pointer",
     fontWeight: 600,
     letterSpacing: "0.01em",
-    boxShadow: "0 10px 20px rgba(14, 116, 144, 0.24)",
   },
 };
 

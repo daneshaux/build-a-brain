@@ -4,12 +4,15 @@ export type RegulationState = "balanced" | "dysregulated";
 
 export type Screen =
   | "intro"
+  | "characterIntro"
   | "roles"
   | "scenario"
   | "analyzing"
+  | "finalCharacter"
   | "result"
-  | "reflection"
+  | "retry"
   | "discussion"
+  | "choicesReview"
   | "summary";
 
 export interface RoleInfo {

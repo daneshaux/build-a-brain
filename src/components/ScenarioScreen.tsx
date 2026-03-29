@@ -3,27 +3,34 @@ import type { BrainRole, Scenario } from "../types/game";
 import BrainBalanceMeter from "./BrainBalanceMeter";
 import type { BalanceMeterState } from "./BrainBalanceMeter";
 import BrainGraphic from "./BrainGraphic";
+import ScenarioIntroOverlay from "./ScenarioIntroOverlay";
+import { playUiSound } from "../utils/sound";
 
 interface ScenarioScreenProps {
   scenario: Scenario;
+  showIntroOverlay: boolean;
   currentRoleIndex: number;
   selectedAnswers: Record<BrainRole, string | null>;
   regulationMeterState: BalanceMeterState;
   isAdvancing: boolean;
   onSelectAnswer: (role: BrainRole, choiceId: string) => void;
   onNext: (role: BrainRole) => void;
+  onIntroOverlayDismiss: () => void;
 }
 
 function ScenarioScreen({
   scenario,
+  showIntroOverlay,
   currentRoleIndex,
   selectedAnswers,
   regulationMeterState,
   isAdvancing,
   onSelectAnswer,
   onNext,
+  onIntroOverlayDismiss,
 }: ScenarioScreenProps) {
   const [hoveredChoiceId, setHoveredChoiceId] = useState<string | null>(null);
+  const [isHintOpen, setIsHintOpen] = useState(false);
   const currentRoleGroup = scenario.roleChoices[currentRoleIndex];
   const currentRole = currentRoleGroup.role;
   const currentPlayerTheme = currentRoleThemes[currentRole];
@@ -36,9 +43,42 @@ function ScenarioScreen({
 
   const selectedChoiceId = selectedAnswers[currentRole];
   const roleStages = scenario.roleChoices.map((roleGroup) => roleGroup.role);
+  const hintMessage = hintByRole[currentRole];
 
   return (
     <div style={styles.screen}>
+      {showIntroOverlay && (
+        <ScenarioIntroOverlay onDismiss={onIntroOverlayDismiss} />
+      )}
+
+      {isHintOpen && (
+        <div
+          className="scenario-hint-overlay"
+          onClick={() => setIsHintOpen(false)}
+          role="presentation"
+        >
+          <div
+            className="scenario-hint-card"
+            style={styles.hintOverlayCard}
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${roleDisplayNames[currentRole]} hint`}
+          >
+            <p style={styles.hintOverlayLabel}>Hint for {roleDisplayNames[currentRole]}</p>
+            <p style={styles.hintOverlayText}>{hintMessage}</p>
+            <button
+              type="button"
+              className="scenario-action-button app-secondary-button"
+              style={styles.hintOverlayButton}
+              onClick={() => setIsHintOpen(false)}
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
+
       <div style={styles.canvas}>
         <div style={styles.topGrid}>
           <div style={styles.leftColumn}>
@@ -123,7 +163,7 @@ function ScenarioScreen({
             return (
               <button
                 key={choice.id}
-                disabled={isAdvancing}
+                disabled={isAdvancing || showIntroOverlay}
                 onClick={() => onSelectAnswer(currentRole, choice.id)}
                 onMouseEnter={() => setHoveredChoiceId(choice.id)}
                 onMouseLeave={() => setHoveredChoiceId((current) => (current === choice.id ? null : current))}
@@ -142,20 +182,32 @@ function ScenarioScreen({
 
         <div style={styles.bottomRow}>
           <button
-            className="scenario-action-button scenario-action-button--next"
+            className="scenario-action-button scenario-action-button--next app-primary-button"
             style={{
               ...styles.nextButton,
-              opacity: selectedChoiceId && !isAdvancing ? 1 : 0.5,
-              cursor: selectedChoiceId && !isAdvancing ? "pointer" : "not-allowed",
+              opacity: selectedChoiceId && !isAdvancing && !showIntroOverlay ? 1 : 0.5,
+              cursor: selectedChoiceId && !isAdvancing && !showIntroOverlay ? "pointer" : "not-allowed",
             }}
-            onClick={() => onNext(currentRole)}
-            disabled={!selectedChoiceId || isAdvancing}
+            onClick={() => {
+              const selectedChoice = currentRoleGroup.choices.find((choice) => choice.id === selectedChoiceId);
+              if (selectedChoice) {
+                playUiSound(selectedChoice.effect === "balanced" ? "positive" : "negative");
+              }
+              onNext(currentRole);
+            }}
+            disabled={!selectedChoiceId || isAdvancing || showIntroOverlay}
           >
             {isAdvancing ? "Updating..." : "Next"}
           </button>
           <button
-            className="scenario-action-button scenario-action-button--hint"
-            style={styles.hintButton}
+            className="scenario-action-button scenario-action-button--hint app-secondary-button"
+            style={{
+              ...styles.hintButton,
+              opacity: showIntroOverlay ? 0.5 : 1,
+              cursor: showIntroOverlay ? "not-allowed" : "pointer",
+            }}
+            onClick={() => setIsHintOpen(true)}
+            disabled={showIntroOverlay}
           >
             ⚡ Hint
           </button>
@@ -198,6 +250,14 @@ const currentRoleThemes: Record<
     shadow:
       "0 12px 28px rgba(245, 158, 11, 0.16), 0 0 0 3px rgba(254, 243, 199, 0.92), 0 0 28px rgba(250, 204, 21, 0.2)",
   },
+};
+
+const hintByRole: Record<BrainRole, string> = {
+  amygdala: "Your amygdala handles emotions 👀 Is this response driven by feelings?",
+  prefrontalCortex:
+    "Your prefrontal cortex helps you think things through. What’s the most thoughtful choice?",
+  hippocampus:
+    "Your hippocampus pulls from memory. What have you learned from past experiences?",
 };
 
 const styles = {
@@ -387,30 +447,55 @@ const styles = {
   },
   hintButton: {
     padding: "0.85rem 1.45rem",
-    borderRadius: "999px",
     border: "1px solid rgba(125, 211, 252, 0.38)",
     background:
       "linear-gradient(135deg, rgba(255, 251, 235, 0.98) 0%, rgba(254, 243, 199, 0.98) 100%)",
     color: "#7c5800",
-    cursor: "pointer",
     fontSize: "1.05rem",
     fontWeight: 700,
     boxShadow:
       "0 10px 24px rgba(245, 158, 11, 0.16), 0 0 0 2px rgba(254, 243, 199, 0.8)",
     transition: "transform 180ms ease, filter 180ms ease, box-shadow 180ms ease",
   },
+  hintOverlayCard: {
+    width: "min(460px, calc(100vw - 2rem))",
+    padding: "1.4rem 1.45rem",
+    borderRadius: "24px",
+    display: "flex",
+    flexDirection: "column" as const,
+    alignItems: "center",
+    gap: "0.9rem",
+    textAlign: "center" as const,
+    background:
+      "linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(248, 251, 255, 0.92) 100%)",
+    border: "1px solid rgba(125, 211, 252, 0.28)",
+    boxShadow:
+      "0 24px 50px rgba(15, 23, 42, 0.18), 0 0 0 3px rgba(224, 242, 254, 0.72)",
+    backdropFilter: "blur(16px)",
+  },
+  hintOverlayLabel: {
+    margin: 0,
+    fontSize: "0.88rem",
+    fontWeight: 700,
+    letterSpacing: "0.1em",
+    textTransform: "uppercase" as const,
+    color: "#4f46e5",
+  },
+  hintOverlayText: {
+    margin: 0,
+    fontSize: "1.05rem",
+    lineHeight: 1.65,
+    color: "#334155",
+  },
+  hintOverlayButton: {
+    padding: "0.82rem 1.35rem",
+    fontSize: "0.96rem",
+    fontWeight: 700,
+  },
   nextButton: {
     padding: "0.85rem 1.4rem",
-    borderRadius: "999px",
-    border: "1px solid rgba(56, 189, 248, 0.42)",
-    background:
-      "linear-gradient(135deg, rgba(239, 246, 255, 0.98) 0%, rgba(219, 234, 254, 0.98) 100%)",
-    color: "#1d4ed8",
-    cursor: "pointer",
     fontSize: "0.98rem",
     fontWeight: 700,
-    boxShadow:
-      "0 12px 26px rgba(56, 189, 248, 0.18), 0 0 0 2px rgba(224, 242, 254, 0.82)",
     transition: "transform 180ms ease, filter 180ms ease, box-shadow 180ms ease",
   },
 };

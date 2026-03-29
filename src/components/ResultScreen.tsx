@@ -1,9 +1,10 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import type { CSSProperties } from "react";
 import type { BalanceMeterState } from "./BrainBalanceMeter";
 import BrainBalanceMeter from "./BrainBalanceMeter";
 import type { RegulationState } from "../types/game";
 import BrainGraphic from "./BrainGraphic";
+import { playUiSound } from "../utils/sound";
 
 interface ResultScreenProps {
   result: RegulationState;
@@ -40,6 +41,10 @@ function ResultScreen({ result }: ResultScreenProps) {
       }),
     [],
   );
+
+  useEffect(() => {
+    playUiSound(isBalanced ? "celebrate" : "alert");
+  }, [isBalanced]);
 
   return (
     <div

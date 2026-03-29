@@ -2,15 +2,19 @@ import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import AnalyzingScreen from "./components/AnalyzingScreen";
 import type { BalanceMeterState } from "./components/BrainBalanceMeter";
+import CharacterIntroScreen from "./components/CharacterIntroScreen";
+import ChoicesSummaryScreen from "./components/ChoicesSummaryScreen";
 import DiscussionScreen from "./components/DiscussionScreen";
+import FinalCharacterScreen from "./components/FinalCharacterScreen";
 import IntroScreen from "./components/IntroScreen";
-import ReflectionScreen from "./components/ReflectionScreen";
 import RoleSelectionScreen from "./components/RoleSelectionScreen";
 import ResultScreen from "./components/ResultScreen";
+import RetryScreen from "./components/RetryScreen";
 import ScenarioScreen from "./components/ScenarioScreen";
 import SummaryScreen from "./components/SummaryScreen";
 import { scenarios } from "./data/scenarios";
 import type { BrainRole, RegulationState, RoleInfo, Screen } from "./types/game";
+import { playUiSound } from "./utils/sound";
 
 const METER_COMMIT_DELAY_MS = 560;
 
@@ -43,6 +47,7 @@ function App() {
   const [selectedRoles, setSelectedRoles] = useState<BrainRole[]>([]);
   const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
   const [hasRetried, setHasRetried] = useState(false);
+  const [hasShownScenarioIntroOverlay, setHasShownScenarioIntroOverlay] = useState(false);
   const [isAdvancingScenario, setIsAdvancingScenario] = useState(false);
   const [baselineMeterState, setBaselineMeterState] = useState<BalanceMeterState>("partial");
   const [committedMeterAnswers, setCommittedMeterAnswers] = useState<Record<BrainRole, string | null>>({
@@ -153,13 +158,13 @@ function App() {
     }
 
     const timerId = window.setTimeout(() => {
-      setScreen("reflection");
+      setScreen(canRetry ? "retry" : "discussion");
     }, 5000);
 
     return () => {
       window.clearTimeout(timerId);
     };
-  }, [screen]);
+  }, [screen, canRetry]);
 
   useEffect(
     () => () => {
@@ -170,6 +175,28 @@ function App() {
     [],
   );
 
+  useEffect(() => {
+    const handleDocumentClick = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) {
+        return;
+      }
+
+      const button = target.closest("button");
+      if (!(button instanceof HTMLButtonElement) || button.disabled) {
+        return;
+      }
+
+      playUiSound("click");
+    };
+
+    document.addEventListener("click", handleDocumentClick, true);
+
+    return () => {
+      document.removeEventListener("click", handleDocumentClick, true);
+    };
+  }, []);
+
   return (
     <div className="global-game-background">
       <div className="role-selection-blob role-selection-blob--one global-game-background__blob global-game-background__blob--one" aria-hidden="true" />
@@ -179,7 +206,11 @@ function App() {
 
       <div className="global-game-background__content">
         {screen === "intro" && (
-          <IntroScreen onStart={() => setScreen("roles")} />
+          <IntroScreen onStart={() => setScreen("characterIntro")} />
+        )}
+
+        {screen === "characterIntro" && (
+          <CharacterIntroScreen onContinue={() => setScreen("roles")} />
         )}
 
         {screen === "roles" && (
@@ -194,12 +225,14 @@ function App() {
         {screen === "scenario" && (
           <ScenarioScreen
             scenario={scenario}
+            showIntroOverlay={!hasShownScenarioIntroOverlay}
             currentRoleIndex={currentRoleIndex}
             selectedAnswers={selectedAnswers}
             regulationMeterState={regulationMeterState}
             isAdvancing={isAdvancingScenario}
             onSelectAnswer={handleSelectAnswer}
             onNext={handleNextRole}
+            onIntroOverlayDismiss={() => setHasShownScenarioIntroOverlay(true)}
           />
         )}
 
@@ -211,24 +244,14 @@ function App() {
           <ResultScreen result={resultState} />
         )}
 
-        {screen === "reflection" && (
-          <ReflectionScreen
-            scenario={scenario}
-            selectedAnswers={selectedAnswers}
-            result={resultState}
-            canRetry={canRetry}
-            onAction={() => {
-              if (canRetry) {
-                setHasRetried(true);
-                setCurrentRoleIndex(0);
-                setBaselineMeterState("dysregulated");
-                setCommittedMeterAnswers({ ...emptyAnswers });
-                setScreen("scenario");
-                return;
-              }
-
-              setBaselineMeterState(resultState === "balanced" ? "balanced" : "dysregulated");
-              setScreen("discussion");
+        {screen === "retry" && (
+          <RetryScreen
+            onRetry={() => {
+              setHasRetried(true);
+              setCurrentRoleIndex(0);
+              setBaselineMeterState("dysregulated");
+              setCommittedMeterAnswers({ ...emptyAnswers });
+              setScreen("scenario");
             }}
           />
         )}
@@ -236,8 +259,22 @@ function App() {
         {screen === "discussion" && (
           <DiscussionScreen
             result={resultState}
-            onContinue={() => setScreen("summary")}
+            onContinue={() => setScreen("finalCharacter")}
+            onViewChoices={() => setScreen("choicesReview")}
           />
+        )}
+
+        {screen === "choicesReview" && (
+          <ChoicesSummaryScreen
+            scenario={scenario}
+            selectedAnswers={selectedAnswers}
+            onBack={() => setScreen("discussion")}
+            onContinue={() => setScreen("finalCharacter")}
+          />
+        )}
+
+        {screen === "finalCharacter" && (
+          <FinalCharacterScreen result={resultState} onContinue={() => setScreen("summary")} />
         )}
 
         {screen === "summary" && (
@@ -250,6 +287,7 @@ function App() {
               setSelectedRoles([]);
               setCurrentRoleIndex(0);
               setHasRetried(false);
+              setHasShownScenarioIntroOverlay(false);
               setIsAdvancingScenario(false);
               setBaselineMeterState("partial");
               setSelectedAnswers({ ...emptyAnswers });

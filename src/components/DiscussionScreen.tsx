@@ -3,9 +3,10 @@ import type { RegulationState } from "../types/game";
 interface DiscussionScreenProps {
   result: RegulationState;
   onContinue: () => void;
+  onViewChoices: () => void;
 }
 
-function DiscussionScreen({ result, onContinue }: DiscussionScreenProps) {
+function DiscussionScreen({ result, onContinue, onViewChoices }: DiscussionScreenProps) {
   const isBalanced = result === "balanced";
   const questions = isBalanced
     ? [
@@ -35,9 +36,14 @@ function DiscussionScreen({ result, onContinue }: DiscussionScreenProps) {
             ))}
           </div>
 
-          <button style={styles.button} onClick={onContinue}>
-            Continue
-          </button>
+          <div style={styles.actions}>
+            <button className="app-secondary-button" style={styles.secondaryButton} onClick={onViewChoices}>
+              View our choices
+            </button>
+            <button className="app-primary-button" style={styles.button} onClick={onContinue}>
+              Continue
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -113,17 +119,20 @@ const styles = {
     color: "#1f2937",
   },
   button: {
-    border: "1px solid rgba(56, 189, 248, 0.34)",
-    borderRadius: "999px",
-    background:
-      "linear-gradient(135deg, rgba(239, 246, 255, 0.98) 0%, rgba(219, 234, 254, 0.98) 100%)",
-    color: "#1d4ed8",
     padding: "0.9rem 1.6rem",
     fontSize: "1rem",
     fontWeight: 700,
-    cursor: "pointer",
-    boxShadow:
-      "0 12px 26px rgba(56, 189, 248, 0.18), 0 0 0 2px rgba(224, 242, 254, 0.82)",
+  },
+  actions: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "0.85rem",
+    flexWrap: "wrap" as const,
+  },
+  secondaryButton: {
+    padding: "0.9rem 1.45rem",
+    fontSize: "1rem",
+    fontWeight: 700,
   },
 };
 
