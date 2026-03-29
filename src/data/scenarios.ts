@@ -5,25 +5,25 @@ export const scenarios: Scenario[] = [
     id: "presentation",
     title: "Class Presentation",
     prompt:
-      "You’re about to give a presentation in class. As you walk to the front of the room, you notice some classmates whispering and laughing. Your heart starts beating faster.",
+      "I’m about to give a presentation in class. As I walk to the front of the room, I notice some classmates whispering and laughing. My heart starts beating faster. What should I do?",
     roleChoices: [
       {
         role: "amygdala",
         choices: [
           {
             id: "a1",
-            text: "They’re laughing at me! This is going to be embarrassing.",
-            effect: "dysregulated",
+            text: "This feels intense... something might be wrong",
+            effect: "balanced",
           },
           {
             id: "a2",
-            text: "This feels scary. I want to stop and sit down.",
+            text: "Let me slow down and think about what to do next",
             effect: "dysregulated",
           },
           {
             id: "a3",
-            text: "Something feels intense right now — my body is reacting.",
-            effect: "balanced",
+            text: "I practiced this before... I think I remember what to do",
+            effect: "dysregulated",
           },
         ],
       },
@@ -32,18 +32,18 @@ export const scenarios: Scenario[] = [
         choices: [
           {
             id: "p1",
-            text: "Take a deep breath and focus on the first sentence.",
+            text: "Let me slow down and think through what I should do next",
             effect: "balanced",
           },
           {
             id: "p2",
-            text: "Forget it. Just rush through it as fast as possible.",
+            text: "My body feels tense... this is really overwhelming",
             effect: "dysregulated",
           },
           {
             id: "p3",
-            text: "Make eye contact with a friend and follow your outline.",
-            effect: "balanced",
+            text: "I remember practicing this last night at home",
+            effect: "dysregulated",
           },
         ],
       },
@@ -52,18 +52,18 @@ export const scenarios: Scenario[] = [
         choices: [
           {
             id: "h1",
-            text: "I practiced this yesterday and it went well.",
+            text: "I practiced this before... I think I remember what to do",
             effect: "balanced",
           },
           {
             id: "h2",
-            text: "Last time I messed up, so this will probably go badly.",
+            text: "My heart is racing... something must be wrong",
             effect: "dysregulated",
           },
           {
             id: "h3",
-            text: "I’ve presented before and survived.",
-            effect: "balanced",
+            text: "Focus on the next step and stick to the plan",
+            effect: "dysregulated",
           },
         ],
       },

@@ -44,6 +44,11 @@ function ScenarioScreen({
   const selectedChoiceId = selectedAnswers[currentRole];
   const roleStages = scenario.roleChoices.map((roleGroup) => roleGroup.role);
   const hintMessage = hintByRole[currentRole];
+  const scenarioThought = scenario.prompt
+    .replace(/^You’re\b/, "I’m")
+    .replace(/^You are\b/, "I am")
+    .replace(/\bYour\b/g, "My")
+    .replace(/\byour\b/g, "my");
 
   return (
     <div style={styles.screen}>
@@ -128,9 +133,13 @@ function ScenarioScreen({
               </div>
             </div>
 
-            <div style={styles.scenarioCard}>
-              <h3 style={styles.scenarioTitle}>Scenario</h3>
-              <p style={styles.scenarioText}>{scenario.prompt}</p>
+            <div style={styles.scenarioBubbleWrap}>
+              <div style={styles.scenarioBubble}>
+                <div style={styles.scenarioThoughtDotLarge} aria-hidden="true" />
+                <div style={styles.scenarioThoughtDotMedium} aria-hidden="true" />
+                <div style={styles.scenarioThoughtDotSmall} aria-hidden="true" />
+                <p style={styles.scenarioText}>{scenarioThought}</p>
+              </div>
             </div>
 
             <div style={styles.currentPlayerWrap}>
@@ -278,7 +287,7 @@ const styles = {
     display: "grid",
     gridTemplateColumns: "minmax(0, 1fr) minmax(0, 2fr)",
     gap: "1rem",
-    alignItems: "start",
+    alignItems: "stretch",
     width: "100%",
   },
   leftColumn: {
@@ -305,14 +314,14 @@ const styles = {
   },
   rightColumn: {
     width: "100%",
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: "1.75rem",
+    display: "grid",
+    gridTemplateRows: "auto 1fr auto",
+    gap: "0.4rem",
   },
   progressSection: {
     display: "flex",
     flexDirection: "column" as const,
-    gap: "0.5rem",
+    gap: "0.7rem",
   },
   progressTitle: {
     margin: 0,
@@ -338,21 +347,59 @@ const styles = {
     background:
       "linear-gradient(180deg, rgba(255, 255, 255, 0.62) 0%, rgba(226, 232, 240, 0.82) 100%)",
   },
-  scenarioCard: {
+  scenarioBubbleWrap: {
+    position: "relative" as const,
+    paddingLeft: "1.2rem",
+    display: "flex",
+    alignItems: "center",
+    minHeight: "100%",
+  },
+  scenarioBubble: {
+    position: "relative" as const,
     background:
       "linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 251, 255, 0.98) 100%)",
     border: "1px solid rgba(125, 211, 252, 0.34)",
-    borderRadius: "20px",
-    padding: "1.5rem 1.6rem",
-    minHeight: "220px",
+    borderRadius: "42px 46px 38px 44px / 36px 40px 34px 38px",
+    padding: "1.1rem 1.5rem",
+    minHeight: "0",
     boxShadow:
       "0 18px 40px rgba(148, 163, 184, 0.18), 0 0 0 3px rgba(224, 242, 254, 0.8), 0 0 28px rgba(186, 230, 253, 0.32)",
   },
-  scenarioTitle: {
-    margin: "0 0 0.65rem 0",
-    fontSize: "2.35rem",
-    fontWeight: 500,
-    color: "#0f172a",
+  scenarioThoughtDotLarge: {
+    position: "absolute" as const,
+    left: "-16px",
+    top: "72%",
+    width: "24px",
+    height: "24px",
+    borderRadius: "999px",
+    background:
+      "linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 251, 255, 0.98) 100%)",
+    border: "1px solid rgba(125, 211, 252, 0.28)",
+    boxShadow: "0 10px 22px rgba(148, 163, 184, 0.14)",
+  },
+  scenarioThoughtDotMedium: {
+    position: "absolute" as const,
+    left: "-34px",
+    top: "83%",
+    width: "16px",
+    height: "16px",
+    borderRadius: "999px",
+    background:
+      "linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 251, 255, 0.98) 100%)",
+    border: "1px solid rgba(125, 211, 252, 0.24)",
+    boxShadow: "0 8px 18px rgba(148, 163, 184, 0.12)",
+  },
+  scenarioThoughtDotSmall: {
+    position: "absolute" as const,
+    left: "-48px",
+    top: "94%",
+    width: "10px",
+    height: "10px",
+    borderRadius: "999px",
+    background:
+      "linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 251, 255, 0.98) 100%)",
+    border: "1px solid rgba(125, 211, 252, 0.22)",
+    boxShadow: "0 6px 14px rgba(148, 163, 184, 0.1)",
   },
   scenarioText: {
     margin: 0,
@@ -363,6 +410,7 @@ const styles = {
   currentPlayerWrap: {
     display: "flex",
     justifyContent: "center",
+    alignSelf: "end",
   },
   currentPlayerBadge: {
     display: "inline-flex",
