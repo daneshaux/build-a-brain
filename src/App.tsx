@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
+import characterIntroAudio from "./assets/audio/character-intro.mp3";
+import missionSetupAudio from "./assets/audio/mission-setup.mp3";
 import AnalyzingScreen from "./components/AnalyzingScreen";
 import type { BalanceMeterState } from "./components/BrainBalanceMeter";
 import BrainCastIntroScreen from "./components/BrainCastIntroScreen";
@@ -23,6 +25,7 @@ import type { BrainRole, RegulationState, RoleInfo, Screen } from "./types/game"
 import { playUiSound } from "./utils/sound";
 
 const METER_COMMIT_DELAY_MS = 560;
+type BuddyIntroStage = "missionSetup" | "characterIntro";
 
 const emptyAnswers: Record<BrainRole, string | null> = {
   amygdala: null,
@@ -49,8 +52,9 @@ function deriveMeterStateFromEffects(
 }
 
 function App() {
-  const [screen, setScreen] = useState<Screen>("intro");
+  const [screen, setScreen] = useState<Screen>("missionSetup");
   const [hasDismissedSplash, setHasDismissedSplash] = useState(false);
+  const [buddyIntroStage, setBuddyIntroStage] = useState<BuddyIntroStage>("missionSetup");
   const [selectedRoles, setSelectedRoles] = useState<BrainRole[]>([]);
   const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
   const [hasRetried, setHasRetried] = useState(false);
@@ -212,16 +216,33 @@ function App() {
       <div className="role-selection-blob role-selection-blob--four global-game-background__blob global-game-background__blob--four" aria-hidden="true" />
 
       <div className="global-game-background__content">
-        {!hasDismissedSplash && screen === "intro" && (
+        {!hasDismissedSplash && screen === "missionSetup" && (
           <SplashScreen onComplete={() => setHasDismissedSplash(true)} />
         )}
 
-        {hasDismissedSplash && screen === "intro" && (
-          <IntroScreen onStart={() => setScreen("characterIntro")} />
+        {hasDismissedSplash && screen === "missionSetup" && (
+          <CharacterIntroScreen
+            audioSrc={missionSetupAudio}
+            ctaLabel="Start Mission"
+            onContinue={() => setScreen("intro")}
+          />
+        )}
+
+        {screen === "intro" && (
+          <IntroScreen
+            onStart={() => {
+              setBuddyIntroStage("characterIntro");
+              setScreen("characterIntro");
+            }}
+          />
         )}
 
         {screen === "characterIntro" && (
-          <CharacterIntroScreen onContinue={() => setScreen("brainCastIntro")} />
+          <CharacterIntroScreen
+            audioSrc={buddyIntroStage === "missionSetup" ? missionSetupAudio : characterIntroAudio}
+            ctaLabel={buddyIntroStage === "missionSetup" ? "Start Mission" : "Meet the Brain Team"}
+            onContinue={() => setScreen("brainCastIntro")}
+          />
         )}
 
         {screen === "brainCastIntro" && (
@@ -314,7 +335,9 @@ function App() {
             attempts={attemptCount}
             flips={flipCount}
             onPlayAgain={() => {
-              setScreen("intro");
+              setScreen("missionSetup");
+              setBuddyIntroStage("missionSetup");
+              setHasDismissedSplash(false);
               setSelectedRoles([]);
               setCurrentRoleIndex(0);
               setHasRetried(false);

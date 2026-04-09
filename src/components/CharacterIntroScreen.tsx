@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import Lottie from "lottie-react";
-import characterIntroAudio from "../assets/audio/character-intro.mp3";
 import idleCharacterAnimation from "../assets/lottie/idlecharacteranimation.json";
 import talkingCharacterAnimation from "../assets/lottie/talkingcharacteranimation.json";
 
 interface CharacterIntroScreenProps {
   onContinue: () => void;
+  audioSrc: string;
+  ctaLabel: string;
 }
 
-function CharacterIntroScreen({ onContinue }: CharacterIntroScreenProps) {
+function CharacterIntroScreen({ onContinue, audioSrc, ctaLabel }: CharacterIntroScreenProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -16,9 +17,13 @@ function CharacterIntroScreen({ onContinue }: CharacterIntroScreenProps) {
   const [shouldPromptContinue, setShouldPromptContinue] = useState(false);
 
   useEffect(() => {
-    const audio = new Audio(characterIntroAudio);
+    const audio = new Audio(audioSrc);
     audioRef.current = audio;
     audio.preload = "auto";
+    setIsMuted(false);
+    setIsPlaying(false);
+    setAutoplayBlocked(false);
+    setShouldPromptContinue(false);
 
     const handleEnded = () => {
       setIsPlaying(false);
@@ -66,7 +71,7 @@ function CharacterIntroScreen({ onContinue }: CharacterIntroScreenProps) {
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audioRef.current = null;
     };
-  }, []);
+  }, [audioSrc]);
 
   const handleAudioControl = async () => {
     const audio = audioRef.current;
@@ -128,7 +133,7 @@ function CharacterIntroScreen({ onContinue }: CharacterIntroScreenProps) {
           style={styles.button}
           onClick={onContinue}
         >
-          Choose Roles
+          {ctaLabel}
         </button>
       </div>
     </div>

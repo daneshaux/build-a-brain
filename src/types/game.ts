@@ -3,6 +3,7 @@ export type BrainRole = "amygdala" | "prefrontalCortex" | "hippocampus";
 export type RegulationState = "balanced" | "dysregulated";
 
 export type Screen =
+  | "missionSetup"
   | "intro"
   | "characterIntro"
   | "brainCastIntro"
