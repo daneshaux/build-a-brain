@@ -115,6 +115,136 @@ body {
   }
 }
 
+@keyframes missionTileIdleFloat {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-5px) scale(1.004);
+  }
+}
+
+@keyframes missionTileActivate {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(0.97);
+  }
+  65% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes missionTileGlowPulse {
+  0% {
+    box-shadow:
+      0 12px 26px rgba(148, 163, 184, 0.12),
+      0 0 10px rgba(103, 232, 249, 0.12);
+  }
+  50% {
+    box-shadow:
+      0 26px 44px rgba(34, 211, 238, 0.24),
+      0 0 28px rgba(103, 232, 249, 0.34);
+  }
+  100% {
+    box-shadow:
+      0 18px 34px rgba(34, 211, 238, 0.16),
+      0 0 12px rgba(103, 232, 249, 0.16);
+  }
+}
+
+@keyframes missionBlobBurst {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  40% {
+    transform: scale(1.35);
+    filter: brightness(1.16);
+  }
+  70% {
+    transform: scale(1.1);
+    filter: brightness(1.06);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+@keyframes missionTextReveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.78);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes missionFragmentBurstOne {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.72);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-40px, -30px) scale(1.08);
+  }
+}
+
+@keyframes missionFragmentBurstTwo {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.72);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(40px, -24px) scale(1.08);
+  }
+}
+
+@keyframes missionFragmentBurstThree {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.72);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0, 42px) scale(1.06);
+  }
+}
+
+@keyframes missionCheckIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @keyframes blobDriftOne {
   0% {
     transform: translate(-30%, -22%) scale(0.88) rotate(0deg);
@@ -376,6 +506,142 @@ body {
 .character-intro-card {
   position: relative;
   overflow: hidden;
+}
+
+.mission-goal-tile:hover {
+  transform: translateY(-4px);
+  filter: brightness(1.02);
+}
+
+.mission-goal-tile:focus-visible {
+  outline: none;
+}
+
+.mission-goal-tile:focus-visible .mission-goal-tile__inner {
+  box-shadow: 0 0 0 4px rgba(191, 219, 254, 0.7);
+}
+
+.mission-goal-tile__inner {
+  will-change: transform;
+}
+
+.mission-goal-tile.is-activated {
+  animation: none;
+}
+
+.mission-goal-tile.is-revealed {
+  filter: brightness(1.02);
+}
+
+.mission-goal-tile.is-revealed .mission-goal-tile__inner {
+  animation:
+    missionTileActivate 520ms cubic-bezier(0.2, 0.8, 0.2, 1) 1,
+    missionTileGlowPulse 760ms ease-out 1;
+}
+
+.mission-goal-tile__face--front.is-visible {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.mission-goal-tile__face--front.is-hidden {
+  opacity: 0;
+  transform: scale(0.96);
+  pointer-events: none;
+}
+
+.mission-goal-tile__face--revealed.is-hidden {
+  opacity: 0;
+  transform: scale(0.96);
+  pointer-events: none;
+}
+
+.mission-goal-tile__face--revealed.is-visible {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.mission-goal-fragment {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border-radius: 999px;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 8;
+  pointer-events: none;
+}
+
+.mission-goal-fragment--one {
+  width: 20px;
+  height: 12px;
+  margin: -6px 0 0 -10px;
+  border-radius: 999px;
+  background: rgba(73, 229, 227, 0.95);
+  box-shadow:
+    0 0 12px rgba(73, 229, 227, 0.65),
+    0 0 22px rgba(34, 211, 238, 0.28);
+}
+
+.mission-goal-fragment--two {
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  background: rgba(129, 140, 248, 0.94);
+  box-shadow:
+    0 0 12px rgba(129, 140, 248, 0.62),
+    0 0 22px rgba(99, 102, 241, 0.26);
+}
+
+.mission-goal-fragment--three {
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  background: rgba(255, 168, 138, 0.94);
+  box-shadow:
+    0 0 12px rgba(255, 168, 138, 0.62),
+    0 0 22px rgba(251, 146, 60, 0.24);
+}
+
+.mission-goal-text.is-hidden,
+.mission-goal-check.is-hidden,
+.mission-goal-tile__blob--revealed.is-hidden {
+  opacity: 0;
+  transform: scale(0.78);
+  pointer-events: none;
+}
+
+.mission-goal-tile.is-revealed .mission-goal-tile__face--revealed.is-visible {
+  animation: missionTextReveal 300ms cubic-bezier(0.2, 0.8, 0.2, 1) 150ms both;
+}
+
+.mission-goal-tile.is-revealed .mission-goal-tile__blob--revealed.is-visible {
+  animation: missionBlobBurst 420ms cubic-bezier(0.2, 0.9, 0.2, 1) 1 both;
+}
+
+.mission-goal-tile.is-revealed .mission-goal-fragment--one {
+  animation: missionFragmentBurstOne 500ms ease-out 50ms 1 both;
+}
+
+.mission-goal-tile.is-revealed .mission-goal-fragment--two {
+  animation: missionFragmentBurstTwo 500ms ease-out 70ms 1 both;
+}
+
+.mission-goal-tile.is-revealed .mission-goal-fragment--three {
+  animation: missionFragmentBurstThree 500ms ease-out 90ms 1 both;
+}
+
+.mission-goal-text.is-visible {
+  animation: missionTextReveal 320ms cubic-bezier(0.2, 0.8, 0.2, 1) 150ms both;
+}
+
+.mission-goal-check.is-visible {
+  animation: missionCheckIn 240ms cubic-bezier(0.2, 0.8, 0.2, 1) 290ms 1 both;
 }
 
 .character-intro-card::before {
