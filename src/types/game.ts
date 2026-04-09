@@ -5,6 +5,11 @@ export type RegulationState = "balanced" | "dysregulated";
 export type Screen =
   | "intro"
   | "characterIntro"
+  | "brainCastIntro"
+  | "buildBrain"
+  | "brainMatchBridge"
+  | "matchBrain"
+  | "beforeRolesNarrator"
   | "roles"
   | "scenario"
   | "analyzing"

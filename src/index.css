@@ -104,6 +104,17 @@ body {
   }
 }
 
+@keyframes characterFocusIn {
+  0% {
+    transform: translateY(12px) scale(0.92);
+    opacity: 0.58;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
 @keyframes blobDriftOne {
   0% {
     transform: translate(-30%, -22%) scale(0.88) rotate(0deg);
@@ -1142,6 +1153,14 @@ body {
 .brain-svg-host .brain-region {
   transition: filter 200ms ease, transform 200ms ease, opacity 200ms ease;
   transform-origin: center;
+}
+
+.brain-svg-host.build-brain-graphic .brain-svg-root path {
+  opacity: 0.32;
+}
+
+.brain-svg-host.build-brain-graphic.has-active-region .brain-svg-root path {
+  opacity: 0.32;
 }
 
 .brain-svg-host.has-active-region .brain-svg-root path {

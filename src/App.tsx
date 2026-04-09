@@ -2,11 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import AnalyzingScreen from "./components/AnalyzingScreen";
 import type { BalanceMeterState } from "./components/BrainBalanceMeter";
+import BrainCastIntroScreen from "./components/BrainCastIntroScreen";
+import BrainMatchBridgeScreen from "./components/BrainMatchBridgeScreen";
+import BuildBrain from "./components/BuildBrain";
 import CharacterIntroScreen from "./components/CharacterIntroScreen";
 import ChoicesSummaryScreen from "./components/ChoicesSummaryScreen";
 import DiscussionScreen from "./components/DiscussionScreen";
 import FinalCharacterScreen from "./components/FinalCharacterScreen";
 import IntroScreen from "./components/IntroScreen";
+import MatchBrainFunctions from "./components/MatchBrainFunctions";
+import NarratorBeforeRolesScreen from "./components/NarratorBeforeRolesScreen";
 import RoleSelectionScreen from "./components/RoleSelectionScreen";
 import ResultScreen from "./components/ResultScreen";
 import RetryScreen from "./components/RetryScreen";
@@ -210,7 +215,27 @@ function App() {
         )}
 
         {screen === "characterIntro" && (
-          <CharacterIntroScreen onContinue={() => setScreen("roles")} />
+          <CharacterIntroScreen onContinue={() => setScreen("brainCastIntro")} />
+        )}
+
+        {screen === "brainCastIntro" && (
+          <BrainCastIntroScreen onComplete={() => setScreen("buildBrain")} />
+        )}
+
+        {screen === "buildBrain" && (
+          <BuildBrain onComplete={() => setScreen("brainMatchBridge")} />
+        )}
+
+        {screen === "brainMatchBridge" && (
+          <BrainMatchBridgeScreen onComplete={() => setScreen("matchBrain")} />
+        )}
+
+        {screen === "matchBrain" && (
+          <MatchBrainFunctions onComplete={() => setScreen("beforeRolesNarrator")} />
+        )}
+
+        {screen === "beforeRolesNarrator" && (
+          <NarratorBeforeRolesScreen onContinue={() => setScreen("roles")} />
         )}
 
         {screen === "roles" && (
