@@ -5,9 +5,7 @@ interface IntroScreenProps {
 function IntroScreen({ onStart }: IntroScreenProps) {
   return (
     <div style={styles.screen}>
-      <p style={styles.mission}>
-        Today you will help balance a brain by playing different brain regions.
-      </p>
+      <p style={styles.mission}>Today you will work together as different parts of the brain.</p>
       <button className="intro-start-button" style={styles.button} onClick={onStart}>
         Enter the Brain
       </button>

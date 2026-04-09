@@ -16,6 +16,7 @@ import RoleSelectionScreen from "./components/RoleSelectionScreen";
 import ResultScreen from "./components/ResultScreen";
 import RetryScreen from "./components/RetryScreen";
 import ScenarioScreen from "./components/ScenarioScreen";
+import SplashScreen from "./components/SplashScreen";
 import SummaryScreen from "./components/SummaryScreen";
 import { scenarios } from "./data/scenarios";
 import type { BrainRole, RegulationState, RoleInfo, Screen } from "./types/game";
@@ -49,6 +50,7 @@ function deriveMeterStateFromEffects(
 
 function App() {
   const [screen, setScreen] = useState<Screen>("intro");
+  const [hasDismissedSplash, setHasDismissedSplash] = useState(false);
   const [selectedRoles, setSelectedRoles] = useState<BrainRole[]>([]);
   const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
   const [hasRetried, setHasRetried] = useState(false);
@@ -210,7 +212,11 @@ function App() {
       <div className="role-selection-blob role-selection-blob--four global-game-background__blob global-game-background__blob--four" aria-hidden="true" />
 
       <div className="global-game-background__content">
-        {screen === "intro" && (
+        {!hasDismissedSplash && screen === "intro" && (
+          <SplashScreen onComplete={() => setHasDismissedSplash(true)} />
+        )}
+
+        {hasDismissedSplash && screen === "intro" && (
           <IntroScreen onStart={() => setScreen("characterIntro")} />
         )}
 
