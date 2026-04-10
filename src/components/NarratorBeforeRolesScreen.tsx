@@ -8,6 +8,8 @@ interface NarratorBeforeRolesScreenProps {
   onContinue: () => void;
 }
 
+const NARRATION_START_DELAY_MS = 650;
+
 function NarratorBeforeRolesScreen({ onContinue }: NarratorBeforeRolesScreenProps) {
   const [isAudioComplete, setIsAudioComplete] = useState(false);
   const [isNarratorTalking, setIsNarratorTalking] = useState(false);
@@ -53,7 +55,7 @@ function NarratorBeforeRolesScreen({ onContinue }: NarratorBeforeRolesScreenProp
         setAutoplayBlocked(true);
         setIsAudioComplete(true);
       });
-    }, 120);
+    }, NARRATION_START_DELAY_MS);
 
     return () => {
       window.clearTimeout(autoplayTimer);
