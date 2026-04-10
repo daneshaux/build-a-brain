@@ -5,10 +5,45 @@ interface IntroScreenProps {
 }
 
 const missionGoals = [
-  "Learn what each brain part does",
-  "Work together to make smart choices",
-  "Think through real-life situations",
-  "Keep the brain calm and balanced",
+  "Understand what each brain part does",
+  "Explain how emotions and thinking work together",
+  "Apply your brain skills to real-life situations",
+  "Make thoughtful and balanced decisions",
+] as const;
+
+const revealedGoalCardThemes = [
+  {
+    background: "linear-gradient(160deg, rgba(255, 255, 255, 0.985) 0%, rgba(252, 247, 249, 0.97) 100%)",
+    border: "rgba(223, 210, 216, 0.42)",
+    ambient: "radial-gradient(circle at 24% 24%, rgba(236, 214, 222, 0.11) 0%, rgba(236, 214, 222, 0) 54%), radial-gradient(circle at 76% 70%, rgba(215, 227, 237, 0.07) 0%, rgba(215, 227, 237, 0) 58%)",
+    particleOne: "rgba(236, 214, 222, 0.12)",
+    particleTwo: "rgba(215, 227, 237, 0.09)",
+    particleThree: "rgba(230, 220, 233, 0.09)",
+  },
+  {
+    background: "linear-gradient(160deg, rgba(255, 255, 255, 0.985) 0%, rgba(252, 250, 244, 0.97) 100%)",
+    border: "rgba(224, 218, 198, 0.42)",
+    ambient: "radial-gradient(circle at 22% 22%, rgba(236, 228, 196, 0.11) 0%, rgba(236, 228, 196, 0) 54%), radial-gradient(circle at 74% 72%, rgba(216, 226, 233, 0.07) 0%, rgba(216, 226, 233, 0) 58%)",
+    particleOne: "rgba(236, 228, 196, 0.12)",
+    particleTwo: "rgba(216, 226, 233, 0.09)",
+    particleThree: "rgba(229, 221, 197, 0.09)",
+  },
+  {
+    background: "linear-gradient(160deg, rgba(255, 255, 255, 0.985) 0%, rgba(248, 246, 252, 0.97) 100%)",
+    border: "rgba(216, 210, 226, 0.42)",
+    ambient: "radial-gradient(circle at 26% 24%, rgba(224, 216, 238, 0.11) 0%, rgba(224, 216, 238, 0) 54%), radial-gradient(circle at 78% 70%, rgba(214, 224, 235, 0.07) 0%, rgba(214, 224, 235, 0) 58%)",
+    particleOne: "rgba(224, 216, 238, 0.12)",
+    particleTwo: "rgba(214, 224, 235, 0.09)",
+    particleThree: "rgba(230, 222, 240, 0.09)",
+  },
+  {
+    background: "linear-gradient(160deg, rgba(255, 255, 255, 0.985) 0%, rgba(245, 249, 252, 0.97) 100%)",
+    border: "rgba(206, 216, 224, 0.42)",
+    ambient: "radial-gradient(circle at 24% 22%, rgba(210, 224, 235, 0.11) 0%, rgba(210, 224, 235, 0) 52%), radial-gradient(circle at 78% 72%, rgba(223, 216, 236, 0.07) 0%, rgba(223, 216, 236, 0) 58%)",
+    particleOne: "rgba(210, 224, 235, 0.12)",
+    particleTwo: "rgba(223, 216, 236, 0.09)",
+    particleThree: "rgba(217, 228, 236, 0.09)",
+  },
 ] as const;
 
 function IntroScreen({ onStart }: IntroScreenProps) {
@@ -31,9 +66,8 @@ function IntroScreen({ onStart }: IntroScreenProps) {
     <div style={styles.screen}>
       <div style={styles.panel}>
         <div style={styles.header}>
-          <p style={styles.eyebrow}>Mission Activation</p>
-          <h1 style={styles.title}>Your Mission</h1>
-          <p style={styles.subtitle}>Tap to reveal what you'll learn on this mission.</p>
+          <h1 style={styles.title}>What You&apos;ll Learn</h1>
+          <p style={styles.subtitle}>Tap each card to reveal what you'll learn.</p>
         </div>
 
         <div style={styles.goalGrid}>
@@ -50,13 +84,7 @@ function IntroScreen({ onStart }: IntroScreenProps) {
               "mission-goal-tile__face--revealed",
               isRevealed ? "is-visible" : "is-hidden",
             ].join(" ");
-            const revealedBlobClassName = [
-              "mission-goal-tile__blob",
-              "mission-goal-tile__blob--revealed",
-              isRevealed ? "is-visible" : "is-hidden",
-            ].join(" ");
             const revealedTextClassName = ["mission-goal-text", isRevealed ? "is-visible" : "is-hidden"].join(" ");
-            const revealedCheckClassName = ["mission-goal-check", isRevealed ? "is-visible" : "is-hidden"].join(" ");
 
             return (
               <button
@@ -73,26 +101,67 @@ function IntroScreen({ onStart }: IntroScreenProps) {
               >
                 <span className="mission-goal-tile__inner" style={styles.goalTileInner}>
                   <span className={frontFaceClassName} style={styles.goalFaceFront}>
-                    <span className="mission-goal-tile__blob" style={styles.goalCore} aria-hidden="true" />
+                    <span
+                      className="mission-goal-ambient"
+                      aria-hidden="true"
+                      style={{
+                        ...styles.goalAmbient,
+                        background: revealedGoalCardThemes[index].ambient,
+                      }}
+                    />
+                    <span
+                      className="mission-goal-particle mission-goal-particle--one"
+                      aria-hidden="true"
+                      style={{ ...styles.goalParticle, background: revealedGoalCardThemes[index].particleOne }}
+                    />
+                    <span
+                      className="mission-goal-particle mission-goal-particle--two"
+                      aria-hidden="true"
+                      style={{ ...styles.goalParticle, background: revealedGoalCardThemes[index].particleTwo }}
+                    />
+                    <span
+                      className="mission-goal-particle mission-goal-particle--three"
+                      aria-hidden="true"
+                      style={{ ...styles.goalParticle, background: revealedGoalCardThemes[index].particleThree }}
+                    />
                     <span style={styles.goalOrb} aria-hidden="true" />
                   </span>
 
-                  <span className={revealedFaceClassName} style={styles.goalFaceBack}>
-                    <span className={revealedBlobClassName} style={styles.goalCore} aria-hidden="true" />
+                  <span
+                    className={revealedFaceClassName}
+                    style={{
+                      ...styles.goalFaceBack,
+                      background: revealedGoalCardThemes[index].background,
+                      borderColor: revealedGoalCardThemes[index].border,
+                    }}
+                  >
+                    <span
+                      className="mission-goal-ambient"
+                      aria-hidden="true"
+                      style={{
+                        ...styles.goalAmbient,
+                        background: revealedGoalCardThemes[index].ambient,
+                      }}
+                    />
+                    <span
+                      className="mission-goal-particle mission-goal-particle--one"
+                      aria-hidden="true"
+                      style={{ ...styles.goalParticle, background: revealedGoalCardThemes[index].particleOne }}
+                    />
+                    <span
+                      className="mission-goal-particle mission-goal-particle--two"
+                      aria-hidden="true"
+                      style={{ ...styles.goalParticle, background: revealedGoalCardThemes[index].particleTwo }}
+                    />
+                    <span
+                      className="mission-goal-particle mission-goal-particle--three"
+                      aria-hidden="true"
+                      style={{ ...styles.goalParticle, background: revealedGoalCardThemes[index].particleThree }}
+                    />
                     <span className="mission-goal-fragment mission-goal-fragment--one" aria-hidden="true" />
                     <span className="mission-goal-fragment mission-goal-fragment--two" aria-hidden="true" />
                     <span className="mission-goal-fragment mission-goal-fragment--three" aria-hidden="true" />
                     <p className={revealedTextClassName} style={styles.goalText}>{goal}</p>
-                    <span
-                      className={revealedCheckClassName}
-                      aria-hidden="true"
-                      style={{
-                        ...styles.goalIndicator,
-                        ...(isRevealed ? styles.goalIndicatorActive : undefined),
-                      }}
-                    >
-                      ✓
-                    </span>
                   </span>
                 </span>
               </button>
@@ -142,14 +211,6 @@ const styles = {
     gap: "0.5rem",
     textAlign: "center" as const,
     maxWidth: "620px",
-  },
-  eyebrow: {
-    margin: 0,
-    fontSize: "0.82rem",
-    fontWeight: 800,
-    letterSpacing: "0.14em",
-    textTransform: "uppercase" as const,
-    color: "#0369a1",
   },
   title: {
     margin: 0,
@@ -208,7 +269,7 @@ const styles = {
   goalFaceBack: {
     position: "absolute" as const,
     inset: 0,
-    padding: "1.2rem",
+    padding: "24px",
     borderRadius: "26px",
     border: "1px solid rgba(34, 211, 238, 0.46)",
     background:
@@ -217,21 +278,11 @@ const styles = {
       "0 20px 38px rgba(34, 211, 238, 0.18), 0 0 0 1px rgba(134, 239, 172, 0.32), 0 0 34px rgba(103, 232, 249, 0.18)",
     display: "flex",
     flexDirection: "column" as const,
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "center",
     gap: "0.9rem",
-    textAlign: "center" as const,
+    textAlign: "left" as const,
     overflow: "visible" as const,
-  },
-  goalCore: {
-    width: "76px",
-    height: "76px",
-    borderRadius: "24px",
-    background:
-      "linear-gradient(145deg, rgba(255,255,255,0.84) 0%, rgba(191,219,254,0.5) 40%, rgba(103,232,249,0.34) 100%)",
-    boxShadow:
-      "0 18px 30px rgba(148, 163, 184, 0.16), inset 0 0 0 1px rgba(255,255,255,0.75)",
-    transform: "rotate(12deg)",
   },
   goalOrb: {
     position: "absolute" as const,
@@ -242,14 +293,34 @@ const styles = {
       "radial-gradient(circle, rgba(103,232,249,0.2) 0%, rgba(191,219,254,0.12) 40%, rgba(255,255,255,0) 72%)",
     filter: "blur(2px)",
   },
+  goalAmbient: {
+    position: "absolute" as const,
+    inset: "-8%",
+    opacity: 0.8,
+    pointerEvents: "none" as const,
+    zIndex: 0,
+  },
+  goalParticle: {
+    position: "absolute" as const,
+    width: "64px",
+    height: "64px",
+    borderRadius: "999px",
+    filter: "blur(16px)",
+    opacity: 0.28,
+    pointerEvents: "none" as const,
+    zIndex: 0,
+  },
   goalText: {
     margin: 0,
-    fontSize: "1.1rem",
-    lineHeight: 1.45,
+    width: "100%",
+    fontSize: "0.94rem",
+    lineHeight: 1.35,
     fontWeight: 700,
     color: "#16324f",
-    textAlign: "center" as const,
-    maxWidth: "13ch",
+    textAlign: "left" as const,
+    maxWidth: "none",
+    position: "relative" as const,
+    zIndex: 2,
   },
   goalIndicator: {
     width: "2rem",

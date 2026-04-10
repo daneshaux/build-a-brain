@@ -18,6 +18,9 @@ interface BrainMatchBridgeScreenProps {
 type CharacterId = "amygdala" | "prefrontalCortex" | "hippocampus";
 
 const BRIDGE_PAUSE_MS = 240;
+const BRIDGE_START_DELAY_MS = 1000;
+const BRIDGE_POST_LINE_DELAY_MS = 600;
+const BRIDGE_EXIT_TRANSITION_MS = 420;
 
 const characters: Record<
   CharacterId,
@@ -62,11 +65,15 @@ const characters: Record<
   },
 };
 
-const AMY_MATCH_CAPTION = "Great job. Now let's match each brain region to the job it does.";
+const AMY_MATCH_CAPTION = "I guess that was pretty good. But let's test your memory...do you remember what we do?";
 
 function BrainMatchBridgeScreen({ onComplete }: BrainMatchBridgeScreenProps) {
   const [isAmyTalking, setIsAmyTalking] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const mutedRef = useRef(false);
   const timeoutRef = useRef<number | null>(null);
   const endedHandlerRef = useRef<(() => void) | null>(null);
 
@@ -95,6 +102,7 @@ function BrainMatchBridgeScreen({ onComplete }: BrainMatchBridgeScreenProps) {
     }
 
     detachEndedHandler();
+    setIsPlaying(false);
     audio.pause();
     audio.currentTime = 0;
     audioRef.current = null;
@@ -114,30 +122,44 @@ function BrainMatchBridgeScreen({ onComplete }: BrainMatchBridgeScreenProps) {
   const startBridge = () => {
     clearTimers();
     clearAudio();
+    setIsAmyTalking(false);
+    setIsPlaying(false);
 
-    const audio = consumeBrainMatchBridgeAudio() ?? new Audio(amyMatchAudio);
-    audio.preload = "auto";
-    audioRef.current = audio;
-    setIsAmyTalking(true);
+    timeoutRef.current = window.setTimeout(() => {
+      const audio = consumeBrainMatchBridgeAudio() ?? new Audio(amyMatchAudio);
+      audio.preload = "auto";
+      audio.muted = mutedRef.current;
+      audioRef.current = audio;
+      setIsAmyTalking(true);
 
-    const finish = () => {
-      setIsAmyTalking(false);
-      timeoutRef.current = window.setTimeout(() => {
-        onComplete();
-      }, BRIDGE_PAUSE_MS);
-    };
+      const finish = () => {
+        setIsAmyTalking(false);
+        setIsPlaying(false);
+        timeoutRef.current = window.setTimeout(() => {
+          setIsExiting(true);
+          timeoutRef.current = window.setTimeout(() => {
+            onComplete();
+          }, BRIDGE_EXIT_TRANSITION_MS);
+        }, BRIDGE_POST_LINE_DELAY_MS + BRIDGE_PAUSE_MS);
+      };
 
-    endedHandlerRef.current = finish;
-    audio.addEventListener("ended", finish, { once: true });
+      endedHandlerRef.current = finish;
+      audio.addEventListener("ended", finish, { once: true });
+      audio.addEventListener("play", () => {
+        setIsPlaying(true);
+      }, { once: true });
 
-    if (!audio.paused) {
-      return;
-    }
+      if (!audio.paused) {
+        setIsPlaying(true);
+        return;
+      }
 
-    void audio.play().catch(() => {
-      setIsAmyTalking(false);
-      clearAudio();
-    });
+      void audio.play().catch(() => {
+        setIsAmyTalking(false);
+        setIsPlaying(false);
+        clearAudio();
+      });
+    }, BRIDGE_START_DELAY_MS);
   };
 
   useEffect(() => {
@@ -155,12 +177,44 @@ function BrainMatchBridgeScreen({ onComplete }: BrainMatchBridgeScreenProps) {
     };
   }, []);
 
+  const handleAudioControl = async () => {
+    const audio = audioRef.current;
+
+    if (!isPlaying || !audio) {
+      setIsMuted(false);
+      mutedRef.current = false;
+      startBridge();
+      return;
+    }
+
+    const nextMuted = !audio.muted;
+    audio.muted = nextMuted;
+    mutedRef.current = nextMuted;
+    setIsMuted(nextMuted);
+  };
+
   return (
-    <div style={styles.screen}>
-      <div style={styles.card}>
-        <div style={styles.header}>
-          <p style={styles.eyebrow}>Nice work</p>
-          <h1 style={styles.title}>Your brain team is ready</h1>
+    <div
+      style={{
+        ...styles.screen,
+        ...(isExiting ? styles.screenExiting : null),
+      }}
+    >
+      <div
+        style={{
+          ...styles.card,
+          ...(isExiting ? styles.cardExiting : null),
+        }}
+      >
+        <div style={styles.controlRow}>
+          <button
+            type="button"
+            onClick={handleAudioControl}
+            aria-label={!isPlaying ? "Play bridge audio" : isMuted ? "Unmute bridge audio" : "Mute bridge audio"}
+            style={styles.audioControl}
+          >
+            {!isPlaying ? "Play audio" : isMuted ? "Unmute" : "Mute"}
+          </button>
         </div>
 
         <div style={styles.stage}>
@@ -225,48 +279,61 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    transition: `opacity ${BRIDGE_EXIT_TRANSITION_MS}ms ease, transform ${BRIDGE_EXIT_TRANSITION_MS}ms cubic-bezier(0.22, 0.86, 0.3, 1)`,
+  },
+  screenExiting: {
+    opacity: 0,
+    transform: "scale(0.985)",
   },
   card: {
     width: "min(980px, 100%)",
-    minHeight: "min(720px, calc(100vh - 1.5rem))",
-    padding: "clamp(1rem, 2.2vh, 1.5rem) clamp(1rem, 2.5vw, 1.8rem)",
+    minHeight: "min(650px, calc(100vh - 4rem))",
+    padding: "clamp(1.5rem, 2.8vh, 2rem) clamp(1.5rem, 2.8vw, 2rem)",
     borderRadius: "32px",
     display: "flex",
     flexDirection: "column" as const,
     alignItems: "center",
     justifyContent: "space-between",
-    gap: "1rem",
+    gap: "0.5rem",
     background:
       "linear-gradient(180deg, rgba(255, 255, 255, 0.78) 0%, rgba(240, 249, 255, 0.72) 100%)",
     border: "1px solid rgba(148, 163, 184, 0.22)",
     boxShadow: "0 18px 48px rgba(15, 23, 42, 0.08)",
     backdropFilter: "blur(14px)",
     overflow: "hidden" as const,
+    transition:
+      `opacity ${BRIDGE_EXIT_TRANSITION_MS}ms ease, ` +
+      `transform ${BRIDGE_EXIT_TRANSITION_MS}ms cubic-bezier(0.22, 0.86, 0.3, 1), ` +
+      `filter ${BRIDGE_EXIT_TRANSITION_MS}ms ease`,
   },
-  header: {
-    textAlign: "center" as const,
+  cardExiting: {
+    opacity: 0.88,
+    transform: "scale(0.985)",
+    filter: "blur(4px)",
+  },
+  controlRow: {
+    width: "100%",
     display: "flex",
-    flexDirection: "column" as const,
-    gap: "0.25rem",
+    justifyContent: "flex-end",
+    marginBottom: "-0.2rem",
   },
-  eyebrow: {
-    margin: 0,
-    fontSize: "0.8rem",
+  audioControl: {
+    padding: "0.55rem 0.9rem",
+    borderRadius: "999px",
+    border: "1px solid rgba(96, 165, 250, 0.28)",
+    background: "linear-gradient(135deg, rgba(255, 255, 255, 0.84), rgba(224, 242, 254, 0.72))",
+    color: "#1d4f78",
+    cursor: "pointer",
+    fontSize: "0.88rem",
     fontWeight: 700,
-    letterSpacing: "0.1em",
-    textTransform: "uppercase" as const,
-    color: "#0369a1",
-  },
-  title: {
-    margin: 0,
-    fontSize: "clamp(1.8rem, 3vw, 2.6rem)",
-    lineHeight: 1.05,
-    color: "#0f172a",
+    letterSpacing: "0.02em",
+    boxShadow: "0 10px 24px rgba(56, 189, 248, 0.12)",
+    backdropFilter: "blur(12px)",
   },
   stage: {
     position: "relative" as const,
     width: "100%",
-    minHeight: "420px",
+    minHeight: "350px",
     flex: 1,
     overflow: "hidden" as const,
   },
@@ -318,6 +385,7 @@ const styles = {
   captionCard: {
     width: "min(760px, 100%)",
     padding: "1rem 1.1rem",
+    marginTop: "-1rem",
     borderRadius: "24px",
     background: "rgba(255, 255, 255, 0.74)",
     border: "1px solid rgba(226, 232, 240, 0.85)",

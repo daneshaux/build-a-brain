@@ -12,10 +12,13 @@ interface FunctionOption {
 }
 
 interface LinePoint {
+  roleId: BrainRole;
+  functionId: string;
   x1: number;
   y1: number;
   x2: number;
   y2: number;
+  length: number;
 }
 
 const roleItems: Array<{ id: BrainRole; label: string }> = [
@@ -46,11 +49,15 @@ function MatchBrainFunctions({ onComplete }: MatchBrainFunctionsProps) {
   const boardRef = useRef<HTMLDivElement | null>(null);
   const leftRefs = useRef<Partial<Record<BrainRole, HTMLButtonElement | null>>>({});
   const rightRefs = useRef<Partial<Record<string, HTMLButtonElement | null>>>({});
+  const matchFeedbackTimeoutRef = useRef<number | null>(null);
+  const [isEntering, setIsEntering] = useState(true);
   const [selectedRole, setSelectedRole] = useState<BrainRole | null>(null);
   const [matchedPairs, setMatchedPairs] = useState<Partial<Record<BrainRole, string>>>({});
   const [linePoints, setLinePoints] = useState<LinePoint[]>([]);
   const [incorrectRole, setIncorrectRole] = useState<BrainRole | null>(null);
   const [incorrectFunctionId, setIncorrectFunctionId] = useState<string | null>(null);
+  const [recentMatchedRole, setRecentMatchedRole] = useState<BrainRole | null>(null);
+  const [recentMatchedFunctionId, setRecentMatchedFunctionId] = useState<string | null>(null);
 
   const allMatched = Object.keys(matchedPairs).length === roleItems.length;
 
@@ -78,16 +85,35 @@ function MatchBrainFunctions({ onComplete }: MatchBrainFunctionsProps) {
 
       return [
         {
+          roleId: roleItem.id,
+          functionId: matchedFunctionId,
           x1: leftRect.right - boardRect.left,
           y1: leftRect.top + leftRect.height / 2 - boardRect.top,
           x2: rightRect.left - boardRect.left,
           y2: rightRect.top + rightRect.height / 2 - boardRect.top,
+          length: Math.hypot(
+            rightRect.left - leftRect.right,
+            rightRect.top + rightRect.height / 2 - (leftRect.top + leftRect.height / 2),
+          ),
         },
       ];
     });
 
     setLinePoints(nextLinePoints);
   }, [matchedPairs]);
+
+  useEffect(() => {
+    const enterTimer = window.setTimeout(() => {
+      setIsEntering(false);
+    }, 30);
+
+    return () => {
+      window.clearTimeout(enterTimer);
+      if (matchFeedbackTimeoutRef.current !== null) {
+        window.clearTimeout(matchFeedbackTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const updateLines = () => {
@@ -114,10 +140,16 @@ function MatchBrainFunctions({ onComplete }: MatchBrainFunctionsProps) {
 
         return [
           {
+            roleId: roleItem.id,
+            functionId: matchedFunctionId,
             x1: leftRect.right - boardRect.left,
             y1: leftRect.top + leftRect.height / 2 - boardRect.top,
             x2: rightRect.left - boardRect.left,
             y2: rightRect.top + rightRect.height / 2 - boardRect.top,
+            length: Math.hypot(
+              rightRect.left - leftRect.right,
+              rightRect.top + rightRect.height / 2 - (leftRect.top + leftRect.height / 2),
+            ),
           },
         ];
       });
@@ -147,11 +179,21 @@ function MatchBrainFunctions({ onComplete }: MatchBrainFunctionsProps) {
     }
 
     if (option.role === selectedRole) {
+      const matchedRole = selectedRole;
       // Lock a correct pair so it can no longer be selected and draw its connector.
       setMatchedPairs((current) => ({
         ...current,
-        [selectedRole]: option.id,
+        [matchedRole]: option.id,
       }));
+      setRecentMatchedRole(matchedRole);
+      setRecentMatchedFunctionId(option.id);
+      if (matchFeedbackTimeoutRef.current !== null) {
+        window.clearTimeout(matchFeedbackTimeoutRef.current);
+      }
+      matchFeedbackTimeoutRef.current = window.setTimeout(() => {
+        setRecentMatchedRole((current) => (current === matchedRole ? null : current));
+        setRecentMatchedFunctionId((current) => (current === option.id ? null : current));
+      }, 560);
       setSelectedRole(null);
       return;
     }
@@ -168,11 +210,20 @@ function MatchBrainFunctions({ onComplete }: MatchBrainFunctionsProps) {
   };
 
   return (
-    <div style={styles.screen}>
-      <div style={styles.card}>
+    <div
+      style={{
+        ...styles.screen,
+        ...(isEntering ? styles.screenEntering : null),
+      }}
+    >
+      <div
+        style={{
+          ...styles.card,
+          ...(isEntering ? styles.cardEntering : null),
+        }}
+      >
         <div style={styles.header}>
-          <p style={styles.eyebrow}>One more warm-up</p>
-          <h1 style={styles.title}>Match each brain region to its job</h1>
+          <h1 style={styles.title}>Match each role to its function</h1>
           <p style={styles.description}>
             Tap a brain region on the left, then tap the matching function on the right.
           </p>
@@ -187,7 +238,17 @@ function MatchBrainFunctions({ onComplete }: MatchBrainFunctionsProps) {
                 y1={line.y1}
                 x2={line.x2}
                 y2={line.y2}
-                style={styles.line}
+                style={{
+                  ...styles.line,
+                  ...(recentMatchedRole === line.roleId && recentMatchedFunctionId === line.functionId
+                    ? {
+                        "--line-length": line.length,
+                        strokeDasharray: `${line.length} ${line.length}`,
+                        strokeDashoffset: line.length,
+                        animation: "matchLineDraw 340ms cubic-bezier(0.22, 1, 0.36, 1) forwards",
+                      }
+                    : null),
+                }}
               />
             ))}
           </svg>
@@ -198,6 +259,7 @@ function MatchBrainFunctions({ onComplete }: MatchBrainFunctionsProps) {
               const isMatched = Boolean(matchedPairs[roleItem.id]);
               const isSelected = selectedRole === roleItem.id;
               const isIncorrect = incorrectRole === roleItem.id;
+              const isRecentlyMatched = recentMatchedRole === roleItem.id;
 
               return (
                 <button
@@ -213,12 +275,25 @@ function MatchBrainFunctions({ onComplete }: MatchBrainFunctionsProps) {
                     ...(isSelected ? styles.selectedCard : {}),
                     ...(isMatched ? styles.matchedCard : {}),
                     ...(isIncorrect ? styles.incorrectCard : {}),
-                    animation: isIncorrect ? "meterShake 280ms ease" : "none",
+                    animation: isIncorrect
+                      ? "meterShake 280ms ease"
+                      : isRecentlyMatched
+                        ? "matchCardSuccessPop 420ms cubic-bezier(0.22, 1, 0.36, 1), matchGlowPulse 520ms ease-out"
+                        : "none",
                     cursor: isMatched ? "default" : "pointer",
                   }}
                 >
                   <span style={styles.itemTitle}>{roleItem.label}</span>
-                  {isMatched && <span style={styles.checkmark}>✓</span>}
+                  {isMatched && (
+                    <span
+                      style={{
+                        ...styles.checkmark,
+                        animation: isRecentlyMatched ? "matchCheckPop 300ms cubic-bezier(0.22, 1, 0.36, 1)" : "none",
+                      }}
+                    >
+                      ✓
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -229,6 +304,7 @@ function MatchBrainFunctions({ onComplete }: MatchBrainFunctionsProps) {
             {functionItems.map((option) => {
               const isMatched = Object.values(matchedPairs).includes(option.id);
               const isIncorrect = incorrectFunctionId === option.id;
+              const isRecentlyMatched = recentMatchedFunctionId === option.id;
 
               return (
                 <button
@@ -243,13 +319,27 @@ function MatchBrainFunctions({ onComplete }: MatchBrainFunctionsProps) {
                     ...styles.itemCard,
                     ...(isMatched ? styles.matchedCard : {}),
                     ...(isIncorrect ? styles.incorrectCard : {}),
-                    animation: isIncorrect ? "meterShake 280ms ease" : "none",
+                    ...(selectedRole && !isMatched ? styles.selectableCard : {}),
+                    animation: isIncorrect
+                      ? "meterShake 280ms ease"
+                      : isRecentlyMatched
+                        ? "matchCardSuccessPop 420ms cubic-bezier(0.22, 1, 0.36, 1), matchGlowPulse 520ms ease-out"
+                        : "none",
                     cursor: isMatched ? "default" : selectedRole ? "pointer" : "not-allowed",
                     opacity: !selectedRole && !isMatched ? 0.82 : 1,
                   }}
                 >
                   <span style={styles.itemTitle}>{option.label}</span>
-                  {isMatched && <span style={styles.checkmark}>✓</span>}
+                  {isMatched && (
+                    <span
+                      style={{
+                        ...styles.checkmark,
+                        animation: isRecentlyMatched ? "matchCheckPop 300ms cubic-bezier(0.22, 1, 0.36, 1)" : "none",
+                      }}
+                    >
+                      ✓
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -282,6 +372,11 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    transition: "opacity 460ms ease, transform 460ms cubic-bezier(0.22, 1, 0.36, 1)",
+  },
+  screenEntering: {
+    opacity: 0,
+    transform: "scale(0.988)",
   },
   card: {
     width: "min(980px, 100%)",
@@ -295,22 +390,20 @@ const styles = {
     border: "1px solid rgba(148, 163, 184, 0.24)",
     boxShadow: "0 14px 36px rgba(15, 23, 42, 0.07)",
     backdropFilter: "blur(12px)",
+    transition: "opacity 460ms ease, transform 460ms cubic-bezier(0.22, 1, 0.36, 1), filter 460ms ease",
+  },
+  cardEntering: {
+    opacity: 0,
+    transform: "scale(0.988)",
+    filter: "blur(4px)",
   },
   header: {
     textAlign: "center" as const,
     display: "flex",
     flexDirection: "column" as const,
-    gap: "0.25rem",
+    gap: "8px",
     maxWidth: "640px",
     margin: "0 auto",
-  },
-  eyebrow: {
-    margin: 0,
-    fontSize: "0.78rem",
-    fontWeight: 700,
-    letterSpacing: "0.1em",
-    textTransform: "uppercase" as const,
-    color: "#0369a1",
   },
   title: {
     margin: 0,
@@ -329,7 +422,7 @@ const styles = {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
     gap: "clamp(2.5rem, 7vw, 5rem)",
-    padding: "1.1rem 0.3rem",
+    padding: "1.1rem 0.3rem 0",
     alignItems: "start",
   },
   linesLayer: {
@@ -347,13 +440,13 @@ const styles = {
     opacity: 0.92,
     filter: "drop-shadow(0 0 6px rgba(56, 189, 248, 0.22))",
     strokeDasharray: "10 0",
-    animation: "scenarioStatusBadgeFloat 1.8s ease-in-out infinite",
+    transition: "filter 220ms ease, opacity 220ms ease",
   },
   column: {
     position: "relative" as const,
     display: "flex",
     flexDirection: "column" as const,
-    gap: "0.9rem",
+    gap: "16px",
     zIndex: 1,
   },
   columnLabel: {
@@ -363,6 +456,7 @@ const styles = {
     letterSpacing: "0.08em",
     textTransform: "uppercase" as const,
     color: "#0f766e",
+    textAlign: "center" as const,
   },
   itemCard: {
     minHeight: "88px",
@@ -381,13 +475,18 @@ const styles = {
   },
   selectedCard: {
     background: "rgba(224, 242, 254, 0.92)",
-    boxShadow: "0 10px 24px rgba(14, 165, 233, 0.12)",
-    transform: "translateY(-1px)",
+    border: "1px solid rgba(56, 189, 248, 0.58)",
+    boxShadow: "0 0 0 3px rgba(186, 230, 253, 0.6), 0 12px 24px rgba(14, 165, 233, 0.14)",
+    transform: "translateY(-1px) scale(1.02)",
+  },
+  selectableCard: {
+    boxShadow: "0 10px 22px rgba(14, 165, 233, 0.08)",
   },
   matchedCard: {
     background: "rgba(236, 253, 245, 0.86)",
     color: "#166534",
     opacity: 0.74,
+    boxShadow: "0 10px 24px rgba(34, 197, 94, 0.1)",
   },
   incorrectCard: {
     background: "rgba(254, 242, 242, 0.92)",
@@ -403,6 +502,7 @@ const styles = {
     fontWeight: 800,
     color: "#16a34a",
     flexShrink: 0,
+    transformOrigin: "center",
   },
   button: {
     alignSelf: "center" as const,

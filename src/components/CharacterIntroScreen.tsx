@@ -7,9 +7,10 @@ interface CharacterIntroScreenProps {
   onContinue: () => void;
   audioSrc: string;
   ctaLabel: string;
+  headingText: string;
 }
 
-function CharacterIntroScreen({ onContinue, audioSrc, ctaLabel }: CharacterIntroScreenProps) {
+function CharacterIntroScreen({ onContinue, audioSrc, ctaLabel, headingText }: CharacterIntroScreenProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -111,7 +112,7 @@ function CharacterIntroScreen({ onContinue, audioSrc, ctaLabel }: CharacterIntro
           </button>
         </div>
 
-        <p style={styles.eyebrow}>Meet your brain buddy</p>
+        <p style={styles.eyebrow}>{headingText}</p>
 
         <div className="character-intro-animation" style={styles.animationFrame}>
           <Lottie
@@ -152,12 +153,14 @@ const styles = {
   },
   card: {
     width: "min(760px, 100%)",
+    minHeight: "min(640px, calc(100vh - 4rem))",
     padding: "clamp(1.75rem, 3vw, 2.75rem)",
     borderRadius: "32px",
     display: "flex",
     flexDirection: "column" as const,
     alignItems: "center",
-    gap: "0.9rem",
+    justifyContent: "space-between",
+    gap: "1rem",
     textAlign: "center" as const,
     background:
       "linear-gradient(180deg, rgba(255, 255, 255, 0.82) 0%, rgba(243, 248, 255, 0.7) 100%)",
@@ -193,10 +196,11 @@ const styles = {
   },
   animationFrame: {
     width: "min(560px, 100%)",
+    flex: 1,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    margin: "0.15rem auto 0.35rem",
+    margin: "0.25rem auto 0.45rem",
   },
   animation: {
     width: "100%",
@@ -208,6 +212,7 @@ const styles = {
     margin: 0,
     fontSize: "0.92rem",
     color: "#46617d",
+    maxWidth: "540px",
   },
   button: {
     padding: "0.95rem 1.75rem",

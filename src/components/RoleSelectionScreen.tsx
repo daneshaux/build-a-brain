@@ -1,4 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import Lottie from "lottie-react";
+import hippoIdleAnimation from "../assets/lottie/hippo_idle.json";
+import mygIdleAnimation from "../assets/lottie/myg_idle.json";
+import pfcIdleAnimation from "../assets/lottie/pfc_idle.json";
 import type { BrainRole, RoleInfo } from "../types/game";
 
 interface RoleSelectionScreenProps {
@@ -9,6 +13,11 @@ interface RoleSelectionScreenProps {
 }
 
 const ROLE_TIMER_SECONDS = 30;
+const roleAnimations: Record<BrainRole, object> = {
+  amygdala: mygIdleAnimation,
+  prefrontalCortex: pfcIdleAnimation,
+  hippocampus: hippoIdleAnimation,
+};
 
 function RoleSelectionScreen({
   roles,
@@ -164,7 +173,7 @@ function RoleSelectionScreen({
                 className="role-selection-card-shell"
                 style={{
                   width: "320px",
-                  height: "232px",
+                  height: "262px",
                   animationDelay:
                     role.id === "amygdala" ? "0s" : role.id === "prefrontalCortex" ? "0.5s" : "1s",
                 }}
@@ -181,6 +190,13 @@ function RoleSelectionScreen({
                   onMouseEnter={() => setHoveredRole(role.id)}
                   onMouseLeave={() => setHoveredRole(null)}
                 >
+                  <div style={styles.characterAccent}>
+                    <div style={styles.characterAccentGlow} aria-hidden="true" />
+                    <div style={styles.characterAccentFrame} aria-hidden="true">
+                      <Lottie animationData={roleAnimations[role.id]} loop autoplay style={styles.characterAccentAnimation} />
+                    </div>
+                  </div>
+
                   <h2 style={{ ...styles.cardTitle, color: theme.titleColor }}>{role.name}</h2>
                   <p style={{ ...styles.cardDescription, color: theme.descriptionColor }}>{role.description}</p>
 
@@ -230,10 +246,10 @@ const styles = {
     justifyContent: "center",
   },
   content: {
-    width: "min(1160px, 100%)",
+    width: "min(1040px, 100%)",
     display: "flex",
     flexDirection: "column" as const,
-    gap: "1.2rem",
+    gap: "1.5rem",
   },
   topRow: {
     display: "flex",
@@ -285,31 +301,65 @@ const styles = {
   },
   cardContainer: {
     display: "flex",
-    gap: "1.5rem",
+    gap: "1.25rem",
     justifyContent: "center",
     flexWrap: "nowrap" as const,
     alignItems: "stretch",
   },
   card: {
     borderRadius: "12px",
-    padding: "1.5rem 1.5rem 1rem",
+    padding: "16px",
     width: "100%",
     height: "100%",
     display: "flex",
     flexDirection: "column" as const,
-    gap: "0.8rem",
     transition: "transform 180ms ease, box-shadow 180ms ease",
   },
   cardTitle: {
     margin: 0,
     fontSize: "1.25rem",
+    textAlign: "center" as const,
+    marginTop: "16px",
+  },
+  characterAccent: {
+    position: "relative" as const,
+    width: "100%",
+    height: "104px",
+    marginBottom: 0,
+    pointerEvents: "none" as const,
+  },
+  characterAccentGlow: {
+    position: "absolute" as const,
+    left: "50%",
+    bottom: "12px",
+    width: "132px",
+    height: "32px",
+    transform: "translateX(-50%)",
+    borderRadius: "999px",
+    background: "radial-gradient(circle, rgba(148, 163, 184, 0.2) 0%, rgba(255,255,255,0) 70%)",
+    filter: "blur(8px)",
+  },
+  characterAccentFrame: {
+    position: "relative" as const,
+    width: "156px",
+    height: "156px",
+    margin: "-22px auto 0",
+    opacity: 0.88,
+    filter: "drop-shadow(0 10px 18px rgba(148, 163, 184, 0.16))",
+  },
+  characterAccentAnimation: {
+    width: "100%",
+    height: "100%",
   },
   cardDescription: {
     margin: 0,
+    lineHeight: 1.35,
+    textAlign: "center" as const,
+    marginTop: "8px",
   },
   smallButton: {
     alignSelf: "center",
-    marginTop: "auto",
+    marginTop: "16px",
     padding: "0.6rem 1rem",
     borderRadius: "8px",
     cursor: "pointer",
@@ -317,7 +367,7 @@ const styles = {
   },
   selectedText: {
     margin: 0,
-    marginTop: "auto",
+    marginTop: "16px",
     alignSelf: "center",
     fontWeight: 600,
   },
@@ -326,6 +376,7 @@ const styles = {
     padding: "0.8rem 1.5rem",
     fontWeight: 600,
     letterSpacing: "0.01em",
+    marginTop: "0.25rem",
   },
 };
 

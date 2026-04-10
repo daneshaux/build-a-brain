@@ -223,6 +223,7 @@ function App() {
         {hasDismissedSplash && screen === "missionSetup" && (
           <CharacterIntroScreen
             audioSrc={missionSetupAudio}
+            headingText="Meet your brain buddy"
             ctaLabel="Start Mission"
             onContinue={() => setScreen("intro")}
           />
@@ -240,6 +241,7 @@ function App() {
         {screen === "characterIntro" && (
           <CharacterIntroScreen
             audioSrc={buddyIntroStage === "missionSetup" ? missionSetupAudio : characterIntroAudio}
+            headingText={buddyIntroStage === "missionSetup" ? "Meet your brain buddy" : "Nice work! Let's meet the team"}
             ctaLabel={buddyIntroStage === "missionSetup" ? "Start Mission" : "Meet the Brain Team"}
             onContinue={() => setScreen("brainCastIntro")}
           />

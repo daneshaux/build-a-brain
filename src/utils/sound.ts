@@ -1,10 +1,11 @@
-type SoundName = "click" | "positive" | "negative" | "celebrate" | "alert";
+type SoundName = "click" | "placement" | "positive" | "negative" | "celebrate" | "alert";
 
 let audioContext: AudioContext | null = null;
 const lastPlayedAt = new Map<SoundName, number>();
 
 const cooldownBySound: Record<SoundName, number> = {
   click: 60,
+  placement: 90,
   positive: 120,
   negative: 120,
   celebrate: 900,
@@ -102,6 +103,10 @@ export function playUiSound(name: SoundName) {
     case "click":
       playTone(ctx, { frequency: 780, type: "triangle", startAt, attack: 0.003, decay: 0.05, peak: 0.028 });
       break;
+    case "placement":
+      playTone(ctx, { frequency: 640, type: "triangle", startAt, attack: 0.002, decay: 0.045, peak: 0.018 });
+      playTone(ctx, { frequency: 820, type: "sine", startAt: startAt + 0.026, attack: 0.003, decay: 0.05, peak: 0.012 });
+      break;
     case "positive":
       playTone(ctx, { frequency: 523.25, type: "sine", startAt, attack: 0.01, decay: 0.1, peak: 0.04 });
       playTone(ctx, { frequency: 659.25, type: "sine", startAt: startAt + 0.05, attack: 0.01, decay: 0.12, peak: 0.036 });
@@ -111,9 +116,10 @@ export function playUiSound(name: SoundName) {
       playTone(ctx, { frequency: 329.63, type: "triangle", startAt: startAt + 0.06, attack: 0.01, decay: 0.15, peak: 0.03 });
       break;
     case "celebrate":
-      playTone(ctx, { frequency: 783.99, type: "triangle", startAt, attack: 0.01, decay: 0.14, peak: 0.05 });
-      playTone(ctx, { frequency: 987.77, type: "sine", startAt: startAt + 0.06, attack: 0.01, decay: 0.16, peak: 0.045 });
-      playTone(ctx, { frequency: 1318.51, type: "sine", startAt: startAt + 0.12, attack: 0.01, decay: 0.18, peak: 0.04 });
+      playTone(ctx, { frequency: 783.99, type: "triangle", startAt, attack: 0.01, decay: 0.18, peak: 0.052 });
+      playTone(ctx, { frequency: 987.77, type: "sine", startAt: startAt + 0.06, attack: 0.01, decay: 0.22, peak: 0.046 });
+      playTone(ctx, { frequency: 1318.51, type: "sine", startAt: startAt + 0.12, attack: 0.01, decay: 0.24, peak: 0.042 });
+      playTone(ctx, { frequency: 1567.98, type: "triangle", startAt: startAt + 0.19, attack: 0.01, decay: 0.26, peak: 0.026 });
       break;
     case "alert":
       playTone(ctx, { frequency: 440, type: "triangle", startAt, attack: 0.01, decay: 0.12, peak: 0.038 });

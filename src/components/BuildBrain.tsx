@@ -4,6 +4,7 @@ import hippoIdleAnimation from "../assets/lottie/hippo_idle.json";
 import mygIdleAnimation from "../assets/lottie/myg_idle.json";
 import pfcIdleAnimation from "../assets/lottie/pfc_idle.json";
 import { primeBrainMatchBridgeAudio } from "../utils/brainMatchBridgeAudio";
+import { playUiSound } from "../utils/sound";
 import BrainGraphic from "./BrainGraphic";
 
 interface BuildBrainProps {
@@ -29,16 +30,24 @@ interface RegionDefinition {
   height: number;
 }
 
+const PART_CARD_HEIGHT = 148;
+
 const partSizes: Record<PartId, { width: number; height: number }> = {
-  amygdala: { width: 108, height: 108 },
-  prefrontalCortex: { width: 138, height: 138 },
-  hippocampus: { width: 144, height: 120 },
+  amygdala: { width: 108, height: PART_CARD_HEIGHT },
+  prefrontalCortex: { width: 138, height: PART_CARD_HEIGHT },
+  hippocampus: { width: 144, height: PART_CARD_HEIGHT },
 };
 
 const partAnimations: Record<PartId, object> = {
   amygdala: mygIdleAnimation,
   prefrontalCortex: pfcIdleAnimation,
   hippocampus: hippoIdleAnimation,
+};
+
+const partAnimationOffsets: Record<PartId, number> = {
+  amygdala: 0,
+  prefrontalCortex: 10,
+  hippocampus: 0,
 };
 
 const regionDefinitions: Record<PartId, RegionDefinition> = {
@@ -69,6 +78,8 @@ function clamp(value: number, min: number, max: number) {
 function BuildBrain({ onComplete }: BuildBrainProps) {
   const stageRef = useRef<HTMLDivElement | null>(null);
   const brainOutlineRef = useRef<HTMLDivElement | null>(null);
+  const feedbackTimeoutRef = useRef<number | null>(null);
+  const completionTimeoutRef = useRef<number | null>(null);
   const positionsRef = useRef<Record<PartId, Position>>({
     amygdala: { x: 0, y: 0 },
     prefrontalCortex: { x: 0, y: 0 },
@@ -78,6 +89,11 @@ function BuildBrain({ onComplete }: BuildBrainProps) {
   const [positions, setPositions] = useState<Record<PartId, Position>>(positionsRef.current);
   const [initialPositions, setInitialPositions] = useState<Record<PartId, Position>>(positionsRef.current);
   const [dragState, setDragState] = useState<DragState | null>(null);
+  const [hoveredPart, setHoveredPart] = useState<PartId | null>(null);
+  const [feedbackPart, setFeedbackPart] = useState<PartId | null>(null);
+  const [brainFeedback, setBrainFeedback] = useState<"final" | null>(null);
+  const [completionMessageVisible, setCompletionMessageVisible] = useState(false);
+  const [interactionLocked, setInteractionLocked] = useState(false);
   const [amygdalaPlaced, setAmygdalaPlaced] = useState(false);
   const [pfcPlaced, setPfcPlaced] = useState(false);
   const [hippocampusPlaced, setHippocampusPlaced] = useState(false);
@@ -91,6 +107,15 @@ function BuildBrain({ onComplete }: BuildBrainProps) {
   useEffect(() => {
     positionsRef.current = positions;
   }, [positions]);
+
+  useEffect(() => () => {
+    if (feedbackTimeoutRef.current !== null) {
+      window.clearTimeout(feedbackTimeoutRef.current);
+    }
+    if (completionTimeoutRef.current !== null) {
+      window.clearTimeout(completionTimeoutRef.current);
+    }
+  }, []);
 
   const isPartPlaced = (partId: PartId) => {
     if (partId === "amygdala") {
@@ -123,14 +148,14 @@ function BuildBrain({ onComplete }: BuildBrainProps) {
 
     const stageRect = stage.getBoundingClientRect();
     const brainRect = brainOutline.getBoundingClientRect();
-    const bottomTrayClearance = 162;
-    const trayY = Math.max(brainRect.bottom - stageRect.top + 18, stageRect.height - bottomTrayClearance);
+    const trayBottomGap = 8;
+    const trayY = stage.clientHeight - PART_CARD_HEIGHT - trayBottomGap;
 
     const nextInitialPositions: Record<PartId, Position> = {
       amygdala: { x: stageRect.width * 0.15, y: trayY },
       prefrontalCortex: {
         x: stageRect.width * 0.5 - partSizes.prefrontalCortex.width / 2,
-        y: trayY - 10,
+        y: trayY,
       },
       hippocampus: {
         x: stageRect.width * 0.85 - partSizes.hippocampus.width,
@@ -264,19 +289,50 @@ function BuildBrain({ onComplete }: BuildBrainProps) {
           (dragState.id === "amygdala" ? true : amygdalaPlaced) &&
           (dragState.id === "prefrontalCortex" ? true : pfcPlaced) &&
           (dragState.id === "hippocampus" ? true : hippocampusPlaced);
+        const snappedPosition = {
+          x: layout.zoneCenters[dragState.id].x - partSize.width / 2,
+          y: layout.zoneCenters[dragState.id].y - partSize.height / 2,
+        };
 
         setPositions((current) => ({
           ...current,
-          [dragState.id]: initialPositions[dragState.id],
+          [dragState.id]: snappedPosition,
         }));
-        setPartPlaced(dragState.id, true);
+        setHoveredPart(null);
+        setFeedbackPart(dragState.id);
+        const placedPartId = dragState.id;
+        const placementLockDelayMs = 240;
+        const completionDelayMs = 3000;
 
-        // Trigger the next screen directly from the final successful drop so the following bridge
-        // screen can start audio from the same user interaction context.
-        if (completesBrain) {
-          primeBrainMatchBridgeAudio();
-          onComplete();
+        if (feedbackTimeoutRef.current !== null) {
+          window.clearTimeout(feedbackTimeoutRef.current);
         }
+        if (completionTimeoutRef.current !== null) {
+          window.clearTimeout(completionTimeoutRef.current);
+        }
+
+        if (completesBrain) {
+          setInteractionLocked(true);
+          setBrainFeedback("final");
+          setCompletionMessageVisible(true);
+          playUiSound("celebrate");
+        } else {
+          playUiSound("placement");
+        }
+
+        feedbackTimeoutRef.current = window.setTimeout(() => {
+          setPartPlaced(placedPartId, true);
+          setFeedbackPart(null);
+
+          if (completesBrain) {
+            completionTimeoutRef.current = window.setTimeout(() => {
+              setCompletionMessageVisible(false);
+              setBrainFeedback(null);
+              primeBrainMatchBridgeAudio();
+              onComplete();
+            }, completionDelayMs - placementLockDelayMs);
+          }
+        }, placementLockDelayMs);
       } else {
         setPositions((current) => ({
           ...current,
@@ -297,7 +353,7 @@ function BuildBrain({ onComplete }: BuildBrainProps) {
   }, [dragState, initialPositions]);
 
   const handlePointerDown = (partId: PartId, event: React.PointerEvent<HTMLDivElement>) => {
-    if (isPartPlaced(partId)) {
+    if (isPartPlaced(partId) || interactionLocked) {
       return;
     }
 
@@ -330,6 +386,8 @@ function BuildBrain({ onComplete }: BuildBrainProps) {
   const renderPart = (partId: PartId, label: string) => {
     const isPlaced = isPartPlaced(partId);
     const isDragging = dragState?.id === partId;
+    const isHovered = hoveredPart === partId;
+    const isFeedbackActive = feedbackPart === partId;
     const size = partSizes[partId];
 
     return (
@@ -344,6 +402,26 @@ function BuildBrain({ onComplete }: BuildBrainProps) {
             event.preventDefault();
           }
         }}
+        onPointerEnter={() => {
+          if (!isPlaced && !isDragging) {
+            setHoveredPart(partId);
+          }
+        }}
+        onPointerLeave={() => {
+          if (hoveredPart === partId) {
+            setHoveredPart(null);
+          }
+        }}
+        onFocus={() => {
+          if (!isPlaced && !isDragging) {
+            setHoveredPart(partId);
+          }
+        }}
+        onBlur={() => {
+          if (hoveredPart === partId) {
+            setHoveredPart(null);
+          }
+        }}
         style={{
           ...styles.partBase,
           width: `${size.width}px`,
@@ -351,16 +429,21 @@ function BuildBrain({ onComplete }: BuildBrainProps) {
           left: `${positions[partId].x}px`,
           top: `${positions[partId].y}px`,
           cursor: isPlaced ? "default" : isDragging ? "grabbing" : "grab",
-          transform: isPlaced ? "scale(0.96)" : isDragging ? "scale(1.03)" : "scale(1)",
+          transform: isPlaced ? "scale(0.96)" : isDragging ? "scale(1.05)" : isHovered ? "scale(1.035)" : "scale(1)",
           boxShadow: isPlaced
             ? "none"
             : isDragging
-              ? "0 10px 20px rgba(15, 23, 42, 0.12)"
-              : "0 4px 10px rgba(15, 23, 42, 0.05)",
+              ? "0 18px 30px rgba(15, 23, 42, 0.14), 0 8px 18px rgba(148, 163, 184, 0.12)"
+              : isFeedbackActive
+                ? "0 0 0 1px rgba(191, 219, 254, 0.52), 0 14px 24px rgba(14, 165, 233, 0.16), 0 0 24px rgba(125, 211, 252, 0.24)"
+              : isHovered
+                ? "0 14px 24px rgba(15, 23, 42, 0.09), 0 6px 14px rgba(148, 163, 184, 0.1)"
+                : "0 3px 8px rgba(15, 23, 42, 0.035)",
           opacity: isPlaced ? 0 : isDragging ? 0.95 : 1,
-          zIndex: isDragging ? 3 : 1,
+          zIndex: isFeedbackActive ? 4 : isDragging ? 3 : 1,
           outline: "none",
-          pointerEvents: isPlaced ? "none" : "auto",
+          pointerEvents: isPlaced || isFeedbackActive ? "none" : "auto",
+          animation: isFeedbackActive ? "buildBrainPartSnap 360ms cubic-bezier(0.22, 1, 0.36, 1), buildBrainPieceGlow 520ms ease-out" : undefined,
         }}
       >
         <div style={styles.partAnimationFrame}>
@@ -368,7 +451,10 @@ function BuildBrain({ onComplete }: BuildBrainProps) {
             animationData={partAnimations[partId]}
             loop
             autoplay
-            style={styles.partAnimation}
+            style={{
+              ...styles.partAnimation,
+              transform: `translateY(${partAnimationOffsets[partId]}px)`,
+            }}
           />
         </div>
         <span style={styles.partLabel}>{label}</span>
@@ -380,17 +466,24 @@ function BuildBrain({ onComplete }: BuildBrainProps) {
     <div style={styles.screen}>
       <div style={styles.card}>
         <div style={styles.header}>
-          <p style={styles.eyebrow}>Before choosing roles</p>
           <h1 style={styles.title}>Build the brain</h1>
           <p style={styles.description}>
-            Drag each brain part into its place. Once all three are locked in, the group can continue.
+            Drag each brain part into its place. Once all three are locked in, your team can continue.
           </p>
         </div>
 
         <div ref={stageRef} style={styles.stage}>
+          {completionMessageVisible && (
+            <div style={styles.completionBanner} aria-live="polite">
+              Brain complete!
+            </div>
+          )}
           <div ref={brainOutlineRef} style={styles.brainOutline}>
             <BrainGraphic
-              className="build-brain-graphic"
+              className={[
+                "build-brain-graphic",
+                brainFeedback === "final" ? "build-brain-graphic--final" : null,
+              ].filter(Boolean).join(" ")}
               style={styles.brainGraphic}
               activeRegions={activeRegions}
               ariaLabel="Brain graphic with draggable regions"
@@ -433,20 +526,21 @@ const styles = {
     minHeight: "100vh",
     width: "min(1366px, 100%)",
     margin: "0 auto",
-    padding: "clamp(0.75rem, 1.8vh, 1.25rem)",
+    padding: "2rem",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
   },
   card: {
-    width: "min(920px, 100%)",
-    maxHeight: "calc(100vh - 1.5rem)",
-    padding: "clamp(1rem, 2vh, 1.35rem) clamp(1rem, 2.2vw, 1.5rem)",
-    borderRadius: "28px",
+    width: "min(960px, 100%)",
+    minHeight: "min(700px, calc(100vh - 4rem))",
+    padding: "clamp(1.5rem, 2.8vh, 2rem) clamp(1.5rem, 2.8vw, 2rem)",
+    borderRadius: "32px",
     display: "flex",
     flexDirection: "column" as const,
     alignItems: "center",
-    gap: "0.85rem",
+    justifyContent: "space-between",
+    gap: "1.15rem",
     background:
       "linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(241, 245, 249, 0.68) 100%)",
     border: "1px solid rgba(148, 163, 184, 0.24)",
@@ -458,16 +552,8 @@ const styles = {
     textAlign: "center" as const,
     display: "flex",
     flexDirection: "column" as const,
-    gap: "0.25rem",
-    maxWidth: "580px",
-  },
-  eyebrow: {
-    margin: 0,
-    fontSize: "0.78rem",
-    fontWeight: 700,
-    letterSpacing: "0.1em",
-    textTransform: "uppercase" as const,
-    color: "#0369a1",
+    gap: "0.3rem",
+    maxWidth: "620px",
   },
   title: {
     margin: 0,
@@ -483,20 +569,40 @@ const styles = {
   },
   stage: {
     position: "relative" as const,
-    width: "min(820px, 100%)",
-    height: "clamp(390px, 48vh, 460px)",
-    padding: "0.75rem",
+    width: "min(840px, 100%)",
+    height: "clamp(430px, 52vh, 520px)",
+    padding: "1.1rem",
     borderRadius: "24px",
     background: "linear-gradient(180deg, rgba(248, 250, 252, 0.88), rgba(241, 245, 249, 0.92))",
     border: "1px solid rgba(148, 163, 184, 0.2)",
     overflow: "hidden" as const,
+  },
+  completionBanner: {
+    position: "absolute" as const,
+    left: "50%",
+    top: "1rem",
+    transform: "translateX(-50%)",
+    padding: "0.62rem 1rem",
+    borderRadius: "999px",
+    background: "rgba(255, 255, 255, 0.82)",
+    border: "1px solid rgba(125, 211, 252, 0.34)",
+    boxShadow: "0 12px 28px rgba(14, 165, 233, 0.14), 0 0 24px rgba(253, 224, 71, 0.18)",
+    color: "#0f172a",
+    fontSize: "0.92rem",
+    fontWeight: 800,
+    letterSpacing: "0.04em",
+    textTransform: "uppercase" as const,
+    whiteSpace: "nowrap" as const,
+    zIndex: 5,
+    animation: "buildBrainCompletionMessage 240ms cubic-bezier(0.22, 1, 0.36, 1)",
+    pointerEvents: "none" as const,
   },
   brainOutline: {
     position: "relative" as const,
     width: "min(360px, 58vw)",
     height: "min(250px, 34vw)",
     margin: "0 auto",
-    marginTop: "0.15rem",
+    marginTop: "0.85rem",
   },
   brainGraphic: {
     width: "100%",
@@ -507,37 +613,44 @@ const styles = {
     display: "flex",
     flexDirection: "column" as const,
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "space-between",
     textAlign: "center" as const,
-    padding: "0.2rem",
-    borderRadius: "24px",
-    background: "rgba(255, 255, 255, 0.04)",
-    border: "1px solid rgba(255, 255, 255, 0.08)",
-    backdropFilter: "blur(2px)",
+    padding: "0.4rem 0.4rem",
+    borderRadius: "18px",
+    background:
+      "radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.12) 38%, rgba(255, 255, 255, 0.04) 72%, rgba(255, 255, 255, 0) 100%)",
+    border: "1px solid rgba(255, 255, 255, 0.12)",
+    backdropFilter: "blur(1px)",
     userSelect: "none" as const,
     touchAction: "none" as const,
-    transition: "transform 140ms ease, box-shadow 140ms ease, opacity 180ms ease",
+    transition: "transform 160ms ease, box-shadow 160ms ease, opacity 180ms ease",
   },
   partAnimationFrame: {
     width: "100%",
-    height: "100%",
+    flex: 1,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    minHeight: 0,
     pointerEvents: "none" as const,
+    overflow: "visible" as const,
   },
   partAnimation: {
-    width: "100%",
-    height: "100%",
+    width: "118%",
+    height: "118%",
     pointerEvents: "none" as const,
   },
   partLabel: {
-    marginTop: "-0.5rem",
-    color: "#0f172a",
-    fontSize: "0.74rem",
-    fontWeight: 700,
-    lineHeight: 1.15,
-    textShadow: "0 1px 2px rgba(255, 255, 255, 0.82)",
+    minHeight: "1.4rem",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "rgba(15, 23, 42, 0.6)",
+    fontSize: "0.62rem",
+    fontWeight: 550,
+    lineHeight: 1.1,
+    letterSpacing: "0.015em",
+    textShadow: "0 1px 2px rgba(255, 255, 255, 0.62)",
     pointerEvents: "none" as const,
   },
   progressRow: {
@@ -545,6 +658,7 @@ const styles = {
     flexWrap: "wrap" as const,
     justifyContent: "center",
     gap: "0.55rem",
+    marginTop: "0.2rem",
   },
   progressText: {
     padding: "0.4rem 0.7rem",
