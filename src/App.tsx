@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
 import characterIntroAudio from "./assets/audio/character-intro.mp3";
 import missionSetupAudio from "./assets/audio/mission-setup.mp3";
@@ -11,9 +11,12 @@ import CharacterIntroScreen from "./components/CharacterIntroScreen";
 import ChoicesSummaryScreen from "./components/ChoicesSummaryScreen";
 import DiscussionScreen from "./components/DiscussionScreen";
 import FinalCharacterScreen from "./components/FinalCharacterScreen";
+import HippocampusReflectionOverlay from "./components/HippocampusReflectionOverlay";
 import IntroScreen from "./components/IntroScreen";
 import MatchBrainFunctions from "./components/MatchBrainFunctions";
 import NarratorBeforeRolesScreen from "./components/NarratorBeforeRolesScreen";
+import PfcEvaluationOverlay from "./components/PfcEvaluationOverlay";
+import type { PfcAgreement } from "./components/PfcEvaluationOverlay";
 import RoleSelectionScreen from "./components/RoleSelectionScreen";
 import ResultScreen from "./components/ResultScreen";
 import RetryScreen from "./components/RetryScreen";
@@ -25,6 +28,10 @@ import type { BrainRole, RegulationState, RoleInfo, Screen } from "./types/game"
 import { playUiSound } from "./utils/sound";
 
 const METER_COMMIT_DELAY_MS = 560;
+const PFC_DISCUSSION_SECONDS = 30;
+const PFC_MIN_DISCUSSION_SECONDS = 9;
+const HIPPOCAMPUS_DISCUSSION_SECONDS = 30;
+const HIPPOCAMPUS_MIN_DISCUSSION_SECONDS = 9;
 type BuddyIntroStage = "missionSetup" | "characterIntro";
 
 const emptyAnswers: Record<BrainRole, string | null> = {
@@ -65,8 +72,26 @@ function App() {
     ...emptyAnswers,
   });
   const advanceTimerRef = useRef<number | null>(null);
+  const pfcDiscussionTimerRef = useRef<number | null>(null);
+  const pfcEvaluationAdvanceHandledRef = useRef(false);
+  const pfcDiscussionProgressRef = useRef(0);
+  const hippocampusDiscussionTimerRef = useRef<number | null>(null);
+  const hippocampusReflectionAdvanceHandledRef = useRef(false);
+  const hippocampusDiscussionProgressRef = useRef(0);
 
   const [selectedAnswers, setSelectedAnswers] = useState<Record<BrainRole, string | null>>({ ...emptyAnswers });
+  // PFC evaluation flow begins.
+  const [isPfcEvaluationOverlayOpen, setIsPfcEvaluationOverlayOpen] = useState(false);
+  const [amygdalaSelectedResponse, setAmygdalaSelectedResponse] = useState<string | null>(null);
+  const [pfcAgreement, setPfcAgreement] = useState<PfcAgreement | null>(null);
+  const [discussionTimerProgress, setDiscussionTimerProgress] = useState(0);
+  const [isPfcDiscussionContinueEnabled, setIsPfcDiscussionContinueEnabled] = useState(false);
+  // PFC evaluation flow ends.
+  // Hippocampus reflection flow begins.
+  const [isHippocampusReflectionOverlayOpen, setIsHippocampusReflectionOverlayOpen] = useState(false);
+  const [hippocampusDiscussionTimerProgress, setHippocampusDiscussionTimerProgress] = useState(0);
+  const [isHippocampusDiscussionContinueEnabled, setIsHippocampusDiscussionContinueEnabled] = useState(false);
+  // Hippocampus reflection flow ends.
 
   const roles: RoleInfo[] = [
     {
@@ -122,6 +147,37 @@ function App() {
     setIsAdvancingScenario(true);
 
     advanceTimerRef.current = window.setTimeout(() => {
+      // PFC evaluation flow begins.
+      if (role === "amygdala" && !hasRetried) {
+        const amygdalaChoices = scenario.roleChoices.find((roleGroup) => roleGroup.role === "amygdala")?.choices ?? [];
+        const selectedAmygdalaChoice = amygdalaChoices.find((choice) => choice.id === selectedChoiceId);
+
+        pfcEvaluationAdvanceHandledRef.current = false;
+        pfcDiscussionProgressRef.current = 0;
+        setAmygdalaSelectedResponse(selectedAmygdalaChoice?.text ?? "");
+        setPfcAgreement(null);
+        setDiscussionTimerProgress(0);
+        setIsPfcDiscussionContinueEnabled(false);
+        setIsPfcEvaluationOverlayOpen(true);
+        setIsAdvancingScenario(false);
+        advanceTimerRef.current = null;
+        return;
+      }
+      // PFC evaluation flow ends.
+
+      // Hippocampus reflection flow begins.
+      if (role === "prefrontalCortex" && !hasRetried) {
+        hippocampusReflectionAdvanceHandledRef.current = false;
+        hippocampusDiscussionProgressRef.current = 0;
+        setHippocampusDiscussionTimerProgress(0);
+        setIsHippocampusDiscussionContinueEnabled(false);
+        setIsHippocampusReflectionOverlayOpen(true);
+        setIsAdvancingScenario(false);
+        advanceTimerRef.current = null;
+        return;
+      }
+      // Hippocampus reflection flow ends.
+
       if (currentRoleIndex < scenario.roleChoices.length - 1) {
         setCurrentRoleIndex((prev) => prev + 1);
       } else {
@@ -131,6 +187,66 @@ function App() {
       advanceTimerRef.current = null;
     }, METER_COMMIT_DELAY_MS);
   };
+
+  // PFC evaluation flow begins.
+  const completePfcEvaluation = useCallback(() => {
+    if (pfcEvaluationAdvanceHandledRef.current) {
+      return;
+    }
+
+    pfcEvaluationAdvanceHandledRef.current = true;
+
+    if (pfcDiscussionTimerRef.current !== null) {
+      window.clearInterval(pfcDiscussionTimerRef.current);
+      pfcDiscussionTimerRef.current = null;
+    }
+
+    setIsPfcEvaluationOverlayOpen(false);
+    setAmygdalaSelectedResponse(null);
+    setPfcAgreement(null);
+    pfcDiscussionProgressRef.current = 0;
+    setDiscussionTimerProgress(0);
+    setIsPfcDiscussionContinueEnabled(false);
+    setCurrentRoleIndex((prev) => Math.min(prev + 1, scenario.roleChoices.length - 1));
+  }, [scenario.roleChoices.length]);
+
+  const handlePfcEvaluationContinue = () => {
+    if (!isPfcDiscussionContinueEnabled) {
+      return;
+    }
+
+    completePfcEvaluation();
+  };
+  // PFC evaluation flow ends.
+
+  // Hippocampus reflection flow begins.
+  const completeHippocampusReflection = useCallback(() => {
+    if (hippocampusReflectionAdvanceHandledRef.current) {
+      return;
+    }
+
+    hippocampusReflectionAdvanceHandledRef.current = true;
+
+    if (hippocampusDiscussionTimerRef.current !== null) {
+      window.clearInterval(hippocampusDiscussionTimerRef.current);
+      hippocampusDiscussionTimerRef.current = null;
+    }
+
+    setIsHippocampusReflectionOverlayOpen(false);
+    hippocampusDiscussionProgressRef.current = 0;
+    setHippocampusDiscussionTimerProgress(0);
+    setIsHippocampusDiscussionContinueEnabled(false);
+    setCurrentRoleIndex((prev) => Math.min(prev + 1, scenario.roleChoices.length - 1));
+  }, [scenario.roleChoices.length]);
+
+  const handleHippocampusReflectionContinue = () => {
+    if (!isHippocampusDiscussionContinueEnabled) {
+      return;
+    }
+
+    completeHippocampusReflection();
+  };
+  // Hippocampus reflection flow ends.
 
   const selectedEffects = scenario.roleChoices
     .map((roleGroup) => {
@@ -182,9 +298,79 @@ function App() {
       if (advanceTimerRef.current !== null) {
         window.clearTimeout(advanceTimerRef.current);
       }
+      if (pfcDiscussionTimerRef.current !== null) {
+        window.clearInterval(pfcDiscussionTimerRef.current);
+      }
+      if (hippocampusDiscussionTimerRef.current !== null) {
+        window.clearInterval(hippocampusDiscussionTimerRef.current);
+      }
     },
     [],
   );
+
+  // PFC evaluation flow begins.
+  useEffect(() => {
+    if (pfcDiscussionTimerRef.current !== null) {
+      window.clearInterval(pfcDiscussionTimerRef.current);
+      pfcDiscussionTimerRef.current = null;
+    }
+
+    if (!isPfcEvaluationOverlayOpen || pfcAgreement === null) {
+      return;
+    }
+
+    pfcDiscussionProgressRef.current = 0;
+    pfcDiscussionTimerRef.current = window.setInterval(() => {
+      const nextProgress = Math.min(pfcDiscussionProgressRef.current + 1, PFC_DISCUSSION_SECONDS);
+      pfcDiscussionProgressRef.current = nextProgress;
+      setDiscussionTimerProgress(nextProgress);
+      setIsPfcDiscussionContinueEnabled(nextProgress >= PFC_MIN_DISCUSSION_SECONDS);
+
+      if (nextProgress >= PFC_DISCUSSION_SECONDS) {
+        completePfcEvaluation();
+      }
+    }, 1000);
+
+    return () => {
+      if (pfcDiscussionTimerRef.current !== null) {
+        window.clearInterval(pfcDiscussionTimerRef.current);
+        pfcDiscussionTimerRef.current = null;
+      }
+    };
+  }, [completePfcEvaluation, isPfcEvaluationOverlayOpen, pfcAgreement]);
+  // PFC evaluation flow ends.
+
+  // Hippocampus reflection flow begins.
+  useEffect(() => {
+    if (hippocampusDiscussionTimerRef.current !== null) {
+      window.clearInterval(hippocampusDiscussionTimerRef.current);
+      hippocampusDiscussionTimerRef.current = null;
+    }
+
+    if (!isHippocampusReflectionOverlayOpen) {
+      return;
+    }
+
+    hippocampusDiscussionProgressRef.current = 0;
+    hippocampusDiscussionTimerRef.current = window.setInterval(() => {
+      const nextProgress = Math.min(hippocampusDiscussionProgressRef.current + 1, HIPPOCAMPUS_DISCUSSION_SECONDS);
+      hippocampusDiscussionProgressRef.current = nextProgress;
+      setHippocampusDiscussionTimerProgress(nextProgress);
+      setIsHippocampusDiscussionContinueEnabled(nextProgress >= HIPPOCAMPUS_MIN_DISCUSSION_SECONDS);
+
+      if (nextProgress >= HIPPOCAMPUS_DISCUSSION_SECONDS) {
+        completeHippocampusReflection();
+      }
+    }, 1000);
+
+    return () => {
+      if (hippocampusDiscussionTimerRef.current !== null) {
+        window.clearInterval(hippocampusDiscussionTimerRef.current);
+        hippocampusDiscussionTimerRef.current = null;
+      }
+    };
+  }, [completeHippocampusReflection, isHippocampusReflectionOverlayOpen]);
+  // Hippocampus reflection flow ends.
 
   useEffect(() => {
     const handleDocumentClick = (event: MouseEvent) => {
@@ -283,10 +469,30 @@ function App() {
             currentRoleIndex={currentRoleIndex}
             selectedAnswers={selectedAnswers}
             regulationMeterState={regulationMeterState}
-            isAdvancing={isAdvancingScenario}
+            isAdvancing={isAdvancingScenario || isPfcEvaluationOverlayOpen || isHippocampusReflectionOverlayOpen}
             onSelectAnswer={handleSelectAnswer}
             onNext={handleNextRole}
             onIntroOverlayDismiss={() => setHasShownScenarioIntroOverlay(true)}
+          />
+        )}
+
+        {screen === "scenario" && isPfcEvaluationOverlayOpen && amygdalaSelectedResponse !== null && (
+          <PfcEvaluationOverlay
+            selectedResponseText={amygdalaSelectedResponse}
+            pfcAgreement={pfcAgreement}
+            discussionTimerProgress={discussionTimerProgress}
+            isContinueEnabled={isPfcDiscussionContinueEnabled}
+            onSelectAgreement={setPfcAgreement}
+            onContinue={handlePfcEvaluationContinue}
+          />
+        )}
+
+        {screen === "scenario" && isHippocampusReflectionOverlayOpen && (
+          <HippocampusReflectionOverlay
+            scenarioContext="Giving a class presentation while others are whispering."
+            discussionTimerProgress={hippocampusDiscussionTimerProgress}
+            isContinueEnabled={isHippocampusDiscussionContinueEnabled}
+            onContinue={handleHippocampusReflectionContinue}
           />
         )}
 
@@ -305,6 +511,18 @@ function App() {
               setCurrentRoleIndex(0);
               setBaselineMeterState("dysregulated");
               setCommittedMeterAnswers({ ...emptyAnswers });
+              setIsPfcEvaluationOverlayOpen(false);
+              setAmygdalaSelectedResponse(null);
+              setPfcAgreement(null);
+              pfcDiscussionProgressRef.current = 0;
+              setDiscussionTimerProgress(0);
+              setIsPfcDiscussionContinueEnabled(false);
+              pfcEvaluationAdvanceHandledRef.current = false;
+              setIsHippocampusReflectionOverlayOpen(false);
+              hippocampusDiscussionProgressRef.current = 0;
+              setHippocampusDiscussionTimerProgress(0);
+              setIsHippocampusDiscussionContinueEnabled(false);
+              hippocampusReflectionAdvanceHandledRef.current = false;
               setScreen("scenario");
             }}
           />
@@ -348,6 +566,18 @@ function App() {
               setBaselineMeterState("partial");
               setSelectedAnswers({ ...emptyAnswers });
               setCommittedMeterAnswers({ ...emptyAnswers });
+              setIsPfcEvaluationOverlayOpen(false);
+              setAmygdalaSelectedResponse(null);
+              setPfcAgreement(null);
+              pfcDiscussionProgressRef.current = 0;
+              setDiscussionTimerProgress(0);
+              setIsPfcDiscussionContinueEnabled(false);
+              pfcEvaluationAdvanceHandledRef.current = false;
+              setIsHippocampusReflectionOverlayOpen(false);
+              hippocampusDiscussionProgressRef.current = 0;
+              setHippocampusDiscussionTimerProgress(0);
+              setIsHippocampusDiscussionContinueEnabled(false);
+              hippocampusReflectionAdvanceHandledRef.current = false;
             }}
           />
         )}

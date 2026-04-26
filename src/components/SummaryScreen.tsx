@@ -19,8 +19,6 @@ function SummaryScreen({ result, attempts, flips, onPlayAgain }: SummaryScreenPr
         title: "Brain State: Regulated",
         interpretation:
           "The brain worked together to stay steady, think clearly, and respond with control.",
-        nextStep:
-          "Next step: Talk about which choice helped the most, then see if you can regulate even faster next round.",
       }
     : {
         glow: "0 24px 60px rgba(248, 113, 113, 0.14), 0 0 0 4px rgba(254, 226, 226, 0.74)",
@@ -31,8 +29,6 @@ function SummaryScreen({ result, attempts, flips, onPlayAgain }: SummaryScreenPr
         title: "Brain State: Dysregulated",
         interpretation:
           "The brain lost balance, so big feelings took over more than calm thinking and helpful memory.",
-        nextStep:
-          "Next step: Look for one choice you would change and try a calmer response next time.",
       };
 
   const metrics = [
@@ -72,11 +68,6 @@ function SummaryScreen({ result, attempts, flips, onPlayAgain }: SummaryScreenPr
                 <span style={styles.metricValue}>{metric.value}</span>
               </div>
             ))}
-          </div>
-
-          <div style={styles.nextStepCard}>
-            <p style={styles.nextStepLabel}>Next Step</p>
-            <p style={styles.nextStepText}>{theme.nextStep}</p>
           </div>
 
           <button className="summary-play-button" style={styles.button} onClick={onPlayAgain}>
@@ -169,29 +160,6 @@ const styles = {
     fontSize: "1.55rem",
     fontWeight: 800,
     color: "#0f172a",
-  },
-  nextStepCard: {
-    width: "100%",
-    borderRadius: "22px",
-    background:
-      "linear-gradient(135deg, rgba(255, 251, 235, 0.86) 0%, rgba(254, 249, 195, 0.92) 100%)",
-    border: "1px solid rgba(250, 204, 21, 0.28)",
-    padding: "1.1rem 1.2rem",
-    textAlign: "left" as const,
-  },
-  nextStepLabel: {
-    margin: "0 0 0.25rem 0",
-    fontSize: "0.86rem",
-    fontWeight: 700,
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.08em",
-    color: "#a16207",
-  },
-  nextStepText: {
-    margin: 0,
-    fontSize: "1rem",
-    lineHeight: 1.6,
-    color: "#713f12",
   },
   button: {
     border: "1px solid rgba(99, 102, 241, 0.28)",

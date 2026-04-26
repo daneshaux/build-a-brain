@@ -42,6 +42,7 @@ function ScenarioScreen({
   };
 
   const selectedChoiceId = selectedAnswers[currentRole];
+  const isInteractionLocked = isAdvancing || showIntroOverlay;
   const roleStages = scenario.roleChoices.map((roleGroup) => roleGroup.role);
   const hintMessage = hintByRole[currentRole];
   const scenarioThought = scenario.prompt
@@ -172,13 +173,13 @@ function ScenarioScreen({
             return (
               <button
                 key={choice.id}
-                disabled={isAdvancing || showIntroOverlay}
+                disabled={isInteractionLocked}
                 onClick={() => onSelectAnswer(currentRole, choice.id)}
                 onMouseEnter={() => setHoveredChoiceId(choice.id)}
                 onMouseLeave={() => setHoveredChoiceId((current) => (current === choice.id ? null : current))}
                 style={{
                   ...styles.choiceButton,
-                  ...(isAdvancing ? styles.disabledChoiceButton : {}),
+                  ...(isInteractionLocked ? styles.disabledChoiceButton : {}),
                   ...(isSelected ? styles.selectedChoiceButton : {}),
                   ...(isHovered ? styles.hoveredChoiceButton : {}),
                 }}
@@ -194,8 +195,8 @@ function ScenarioScreen({
             className="scenario-action-button scenario-action-button--next app-primary-button"
             style={{
               ...styles.nextButton,
-              opacity: selectedChoiceId && !isAdvancing && !showIntroOverlay ? 1 : 0.5,
-              cursor: selectedChoiceId && !isAdvancing && !showIntroOverlay ? "pointer" : "not-allowed",
+              opacity: selectedChoiceId && !isInteractionLocked ? 1 : 0.5,
+              cursor: selectedChoiceId && !isInteractionLocked ? "pointer" : "not-allowed",
             }}
             onClick={() => {
               const selectedChoice = currentRoleGroup.choices.find((choice) => choice.id === selectedChoiceId);
@@ -204,19 +205,19 @@ function ScenarioScreen({
               }
               onNext(currentRole);
             }}
-            disabled={!selectedChoiceId || isAdvancing || showIntroOverlay}
+            disabled={!selectedChoiceId || isInteractionLocked}
           >
-            {isAdvancing ? "Updating..." : "Next"}
+            {isAdvancing ? "Updating..." : "Continue"}
           </button>
           <button
             className="scenario-action-button scenario-action-button--hint app-secondary-button"
             style={{
               ...styles.hintButton,
-              opacity: showIntroOverlay ? 0.5 : 1,
-              cursor: showIntroOverlay ? "not-allowed" : "pointer",
+              opacity: isInteractionLocked ? 0.5 : 1,
+              cursor: isInteractionLocked ? "not-allowed" : "pointer",
             }}
             onClick={() => setIsHintOpen(true)}
-            disabled={showIntroOverlay}
+            disabled={isInteractionLocked}
           >
             ⚡ Hint
           </button>
